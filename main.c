@@ -9,7 +9,7 @@
 
 int main(int argc, char ** argv) {
 
-    uint32_t MIN_BLOCK_SIZE = 4U;
+//    uint32_t MIN_BLOCK_SIZE = 4U;
     /* get input file
 
     parse each memory access: field1 field2 field3
