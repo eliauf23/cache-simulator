@@ -7,7 +7,6 @@
 #include "csim_fns.h"
 
 
-#define MIN_BLOCK_SIZE 4U
 
 uint32_t dummyFunction() {
     return 0;
