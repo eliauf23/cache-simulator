@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
+
 //define constants:
 
 #define MIN_BLOCK_SIZE 4U

@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <stdint.h>
-#include <string.h>
 #include "csim_fns.h"
 
 //TODO: clarify where we need to use uint32_t vs unsigned int?
