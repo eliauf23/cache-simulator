@@ -42,15 +42,24 @@ typedef struct {
     Set * sets; //array of sets
     uint32_t indexLen; //i.e. num bits in index
     uint32_t offsetLen; //num bits in offset
-    uint32_t addressLen = ADDRESS_LEN;
+    //uint32_t addressLen = ADDRESS_LEN;
     //not needed in direct mapping, but might need number of blocks per set for associative mapping
 } Cache;
 
-
+int printErrorMsg(char * msg);
 
 //prints out results with required formatting
 void displayResults(uint32_t loads, uint32_t stores, uint32_t loadHits, uint32_t loadMisses, uint32_t storeHits, uint32_t storeMisses, uint32_t cycles);
 
 //returns 1 if number is a power of 2, 0 if not a power of 2
-int isPowerOfTwo(uint32_t num);
+unsigned int isPowerOfTwo(uint32_t num);
+
+//returns -1 if cache miss, else returns index in cache
+int findAddressInCache(Cache cache, uint32_t address);
+
+unsigned int log_base2(unsigned int num);
+
+
 #endif
+
+
