@@ -118,12 +118,12 @@ int main(int argc, char ** argv) {
     }
 
     uint32_t loads = 0U;
-    uint32_t stores = 0;
-    uint32_t loadHits = 0;
-    uint32_t loadMisses = 0;
-    uint32_t storeHits = 0;
-    uint32_t storeMisses = 0;
-    uint32_t cycles = 0;
+    uint32_t stores = 0U;
+    uint32_t loadHits = 0U;
+    uint32_t loadMisses = 0U;
+    uint32_t storeHits = 0U;
+    uint32_t storeMisses = 0U;
+    uint32_t cycles = 0U;
 
 
     //can use scanf with stdin to get trace lines
@@ -135,29 +135,43 @@ int main(int argc, char ** argv) {
         //int on purpose so you can check it's invalid = -1
         int isDataInCache = findAddressInCache(cache, address);
 
+
         if(storeOrLoad == 's') {
             stores++;
             if(isDataInCache == -1) { //cache miss
                 loadMisses++;
                 if(writeAllocate) {
 
-                } else { //is write back
+                    //TODO: handle write-allocate case
+                    //bring the relevant memory block into the cache before the store proceeds
+
+
+                } else { //is no-write allocate
+                    //TODO: handle no-write-allocate case by not modifying cache?
 
                 }
             }
             else {  //if cache hit(should increment loadHits)
                 loadHits++;
                 if(writeBack) {
+                    //TODO: handle write-back case
+                    //if store & cache hit & write back:
+                    //you need to write to cache
+                    //mark block as modified: dirty = 1
+                    //TODO: make functions to compute the following:
+                        // set_index = findIndex(cache, address);
+                        //  block_index = findAddressInBlock(cache, address);
+                    //if this block is evicted in the future - must be written back to memory before replacing
 
                 } else { //is write through
-
+                    //TODO: handle write-through case
+                    //write to cache & write to memory!
                 }
             }
         } else if(storeOrLoad == 'l') {
             loads++;
            if(isDataInCache == -1) {
                loadMisses++;
-
                //loadMissingData();
                //cycles += numCyclesToLoadData + 1;
            } else {//cache hit
