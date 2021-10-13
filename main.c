@@ -31,7 +31,7 @@ int main(int argc, char ** argv) {
     //determine if block number is valid
     if (argv[2] != NULL && atol(argv[2]) > 0) {
         sscanf(argv[2], "%u", &numBlocks);
-        if (!(numBlocks && !(numBlocks & (numBlocks - 1)))) {
+        if (!isPowerOfTwo(numBlocks)) {
             //check if not power of two
             return printErrorMsg("Num blocks is not power of 2.");
 
@@ -42,7 +42,7 @@ int main(int argc, char ** argv) {
 
     if (argv[3] != NULL && atol(argv[3]) > 0) {
         sscanf(argv[3], "%u", &blockSize);
-        if (!(blockSize && !(blockSize & (blockSize - 1)))) {
+        if (!isPowerOfTwo(blockSize)) {
             //check if not power of two
             return printErrorMsg("cache size not power of 2.");
 
