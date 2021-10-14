@@ -15,7 +15,6 @@ class Set {
     std::vector <Block> blocks; //array of blocks
     //blockTag - string?
 
-    bool isDirty = false;
     bool hasData = false;
 
 
@@ -47,4 +46,4 @@ class Set {
 
 }
 
-#endif  //!__SET__H__
+#endif //!__SET__H__
