@@ -1,14 +1,24 @@
-CC = gcc
-CFLAGS = -g -Wall -Wextra -pedantic -std=gnu11
+CC = g++
+CFLAGS = -g -Wall -Wextra -pedantic -std=c++14
 
 csim: main.o csim_fns.o
 	$(CC) -o csim main.o csim_fns.o
 
-main.o: main.c csim_fns.h
-	$(CC) $(CFLAGS) -c main.c
+main.o: main.cpp csim_fns.h
+	$(CC) $(CFLAGS) -c main.cpp
 
-csim_fns.o: csim_fns.c csim_fns.h
-	$(CC) $(CFLAGS) -c csim_fns.c
+csim_fns.o: csim_fns.cpp csim_fns.h
+	$(CC) $(CFLAGS) -c csim_fns.cpp
+
+block.o: block.cpp block.h
+	$(CC) $(CFLAGS) -c block.cpp
+
+set.o: set.cpp set.h
+	$(CC) $(CFLAGS) -c set.cpp
+
+cache.o: cache.cpp cache.h
+	$(CC) $(CFLAGS) -c cache.cpp
+
 
 all : csim
 

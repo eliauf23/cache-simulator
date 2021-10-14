@@ -8,8 +8,10 @@
 #include <vector>
 
 using namespace std::vector;
+using namespace Block;
 
-
+namespace Set {
+    
 class Set {
     private:
     std::vector <Block> blocks; //array of blocks
@@ -46,5 +48,7 @@ class Set {
 
 
 }
+}
+
 
 #endif  //!__SET__H__
