@@ -13,5 +13,14 @@ class Cache {
         this.write_strategy = write_strategy;
         this.evict_strategy = evict_strategy;
     }
+
+    Cache::handleWrite() {
+
+        if()
+
+    }
+
+
+
 }
 #endif  //!__CACHE__H__

@@ -73,15 +73,15 @@ int main(int argc, char ** argv) {
     }
 
 //don't need yet - commented out so don't get warning unused var
-    // if (strcmp("fifo", argv[6]) == 0) {
-    //     lru = 0;
-    //     fifo = 1;
-    // } else if (strcmp("lru", argv[6]) == 0) {
-    //     lru = 1;
-    //     fifo = 0;
-    // } else {
-    //     return printErrorMsg("Problem with arg 6");
-    // }
+    if (strcmp("fifo", argv[6]) == 0) {
+        lru = 0;
+        fifo = 1;
+    } else if (strcmp("lru", argv[6]) == 0) {
+        lru = 1;
+        fifo = 0;
+    } else {
+        return printErrorMsg("Problem with arg 6");
+    }
 
     // error checking
     if (blockSize < MIN_BLOCK_SIZE) {
@@ -96,15 +96,15 @@ int main(int argc, char ** argv) {
 
     //make cache
 
-    // Cache cache;
-    // cache.numSets = numSets;
+    Cache cache = new Cache(/* fill out init fields*/);
+    cache.numSets = numSets;
     // //implement log base2 function or get it from math library
-    // cache.indexLen = log_base2(blockSize);
-    // cache.offsetLen = log_base2(numSets);
+    cache.indexLen = log_base2(blockSize);
+    cache.offsetLen = log_base2(numSets);
 
 
-    //cache.sets = calloc(numSets, sizeof(Set));
-    /* for(unsigned int i = 0; i < numSets; i++) {
+    cache.sets = calloc(numSets, sizeof(Set));
+    for(unsigned int i = 0; i < numSets; i++) {
         Set set;
         Block * blocks = calloc(numBlocks, sizeof(Block));
         for (unsigned int j = 0; j < numBlocks; j++) {
@@ -114,7 +114,7 @@ int main(int argc, char ** argv) {
         set.numBlocks = numBlocks;
         set.numUnusedBlocks = numBlocks;
         (cache.sets)[i] = set;
-    } */
+    }
 
     uint32_t loads = 0U;
     uint32_t stores = 0U;
@@ -125,7 +125,7 @@ int main(int argc, char ** argv) {
     uint32_t cycles = 0U;
 
 
-    /* //can use scanf with stdin to get trace lines
+    //can use scanf with stdin to get trace lines
     char storeOrLoad;
     uint32_t address;
     int third_thing; //TODO: we don't need this, right
@@ -140,11 +140,12 @@ int main(int argc, char ** argv) {
 
             if(isDataInCache == -1) { //cache miss
             //TODO: always -1 so commenting out for MS1
-                //loadMisses++;
+                storeMisses++;
                 if(writeAllocate) {
 
                     //TODO: handle write-allocate case
                     //bring the relevant memory block into the cache before the store proceeds
+                    cache.handleWrite(); //overload method
 
 
                 } else { //is no-write allocate
@@ -153,7 +154,7 @@ int main(int argc, char ** argv) {
                 }
             }
             else {  //if cache hit(should increment loadHits)
-                loadHits++;
+                storeHits++;
                 if(writeBack) {
                     //TODO: handle write-back case
                     //if store & cache hit & write back:
@@ -184,7 +185,6 @@ int main(int argc, char ** argv) {
             return printErrorMsg("trace file had invalid operation.");
         }
     }
- */
     //output results
     displayResults(loads, stores, loadHits, loadMisses, storeHits, storeMisses, cycles);
 

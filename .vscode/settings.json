@@ -1,0 +1,14 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/eliauf/csf_assign03",
+            "binaryPath": "/home/eliauf/csf_assign03/csim",
+            "binaryArgs": []
+        }
+    ],
+    "files.associations": {
+        "stdlib.h": "c"
+    }
+}
