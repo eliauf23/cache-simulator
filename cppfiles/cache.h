@@ -1,6 +1,8 @@
 #ifndef __CACHE__H__
 #define __CACHE__H__
 
+
+
 class Cache {
 
     public:
@@ -14,10 +16,12 @@ class Cache {
         this.evict_strategy = evict_strategy;
     }
 
-    Cache::handleWrite() {
+   Cache::handleWriteMemory() {
 
-        if()
+    }
 
+    Cache::handleReadMemory() {
+        
     }
 
 

@@ -145,7 +145,7 @@ int main(int argc, char ** argv) {
 
                     //TODO: handle write-allocate case
                     //bring the relevant memory block into the cache before the store proceeds
-                    cache.handleWrite(); //overload method
+                    cache.handleWriteMemory(); //overload method
 
 
                 } else { //is no-write allocate
