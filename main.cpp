@@ -131,55 +131,38 @@ int main(int argc, char ** argv) {
     int third_thing; //TODO: we don't need this, right
     //want to consume third thing and move onto next line -> does it automatically parse it?
     while(scanf(" %c %x %d ", &storeOrLoad, &address, &third_thing) == 3) {
-        //int on purpose so you can check it's invalid = -1
+        //yes =1 , no = 0;
         int isDataInCache = findAddressInCache(cache, address);
-
 
         if(storeOrLoad == 's') {
             stores++;
-
-            if(isDataInCache == -1) { //cache miss
-            //TODO: always -1 so commenting out for MS1
-                storeMisses++;
-                if(writeAllocate) {
-
-                    //TODO: handle write-allocate case
-                    //bring the relevant memory block into the cache before the store proceeds
-                    cache.handleWriteMemory(); //overload method
-
-
-                } else { //is no-write allocate
-                    //TODO: handle no-write-allocate case by not modifying cache?
-
-                }
-            }
-            else {  //if cache hit(should increment loadHits)
+            if(isDataInCache == 1) {
                 storeHits++;
-                if(writeBack) {
-                    //TODO: handle write-back case
-                    //if store & cache hit & write back:
-                    //you need to write to cache
-                    //mark block as modified: dirty = 1
-                    //TODO: make functions to compute the following:
-                        // set_index = findIndex(cache, address);
-                        //  block_index = findAddressInBlock(cache, address);
-                    //if this block is evicted in the future - must be written back to memory before replacing
-
-                } else { //is write through
-                    //TODO: handle write-through case
-                    //write to cache & write to memory!
-                }
+                return;
             }
-        } else if(storeOrLoad == 'l') {
+            if(isDataInCache == 0) { //cache miss
+                storeMisses++;
+                //pass in all relevant parameter. Only updates Cycles!
+                cache.handelStoreHit(cache, address, writeAllocate, writeBack);
+                
+            }
+            else {  //if cache hit(should increment loadHits //TODO: should you? Its store here not load!)
+                storeHits++;
+                cache.handleStoreMiss(cache, address, writeAllocate, writeBack)
+               }
+        } 
+        
+        else if(storeOrLoad == 'l') {
             loads++;
-           if(isDataInCache == -1) {
+           if(isDataInCache == 0) {
                loadMisses++;
+               cache.handleLoadMiss(cache, address, writeAllocate, writeBack, LIFO, LRU);
                //loadMissingData();
                //cycles += numCyclesToLoadData + 1;
-           } else {//cache hit
+           } else if(isDataInCache == 1) {//cache hit
                loadHits++;
-               cycles++;
-               //update num uses of cache blocks
+                cycles++;
+                //update num uses of cache blocks
            }
         } else {
             return printErrorMsg("trace file had invalid operation.");
