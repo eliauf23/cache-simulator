@@ -2,7 +2,6 @@
 #define __BLOCK__H__
 
 #include <iostream>
-
 using namespace std;
 
 class Block {

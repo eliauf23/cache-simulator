@@ -1,4 +1,6 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'main.cpp', needed by 'main.o'.  Stop.
+ 
 # GNU Make 4.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2014 Free Software Foundation, Inc.
@@ -6,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Oct 14 14:53:07 2021
+# Make data base, printed on Thu Oct 14 15:06:56 2021
 
 # Variables
 
@@ -39,7 +41,7 @@ VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
 # environment
 _ = /home/eliauf/.vscode-server/bin/ee8c7def80afc00dd6e593ef12f37756d8f504ea/node
 # makefile (from 'Makefile', line 2)
-CFLAGS = -g -Wall -Wextra -pedantic -std=gnu11
+CFLAGS = -g -Wall -Wextra -pedantic -std=c++14
 # makefile (from 'Makefile', line 1)
 MAKEFILE_LIST :=  Makefile
 # 'override' directive
@@ -99,7 +101,7 @@ MAKECMDGOALS := all
 # environment
 SHLVL = 2
 # makefile (from 'Makefile', line 1)
-CC = gcc
+CC = g++
 # default
 MAKE_VERSION := 4.1
 # environment
@@ -157,7 +159,7 @@ VSCODE_EXTHOST_WILL_SEND_SOCKET = true
 # environment
 WSL_DISTRO_NAME = Ubuntu-18.04
 # variable set hash-table stats:
-# Load=73/1024=7%, Rehash=0, Collisions=3/103=3%
+# Load=73/1024=7%, Rehash=0, Collisions=3/98=3%
 
 # Pattern-specific Variable Values
 
@@ -165,9 +167,9 @@ WSL_DISTRO_NAME = Ubuntu-18.04
 
 # Directories
 
-# . (device 2064, inode 101087): 14 files, no impossibilities.
+# . (device 2064, inode 101087): 20 files, no impossibilities.
 
-# 14 files, no impossibilities in 1 directories.
+# 20 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -175,57 +177,70 @@ WSL_DISTRO_NAME = Ubuntu-18.04
 
 # Files
 
+cache.o: cache.cpp cache.h
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 20):
+	$(CC) $(CFLAGS) -c cache.cpp
+
 all: csim
 #  Command line target.
 #  Implicit rule search has been done.
 #  File does not exist.
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/5=0%
+#  File has not been updated.
 
-# Not a target:
-main.c:
-#  Implicit rule search has been done.
-#  Last modified 2021-10-14 14:43:11.2395505
-#  File has been updated.
-#  Successfully updated.
-
-csim_fns.o: csim_fns.c csim_fns.h
+csim_fns.o: csim_fns.cpp csim_fns.h
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 11):
-	$(CC) $(CFLAGS) -c csim_fns.c
-
-# Not a target:
-.SUFFIXES:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+	$(CC) $(CFLAGS) -c csim_fns.cpp
 
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2021-10-11 14:55:41.0010444
+#  Last modified 2021-10-14 15:05:00.8495505
 #  File has been updated.
 #  Successfully updated.
 
 csim: main.o csim_fns.o
 #  Implicit rule search has not been done.
-#  Last modified 2021-10-12 22:19:23.3496646
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/5=0%
+#  File does not exist.
+#  File has not been updated.
 #  recipe to execute (from 'Makefile', line 5):
 	$(CC) -o csim main.o csim_fns.o
 
 # Not a target:
-csim_fns.c:
+main.cpp:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+block.h:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
+
+# Not a target:
+block.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+cache.h:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+set.o: set.cpp set.h
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 17):
+	$(CC) $(CFLAGS) -c set.cpp
 
 # Not a target:
 .DEFAULT:
@@ -234,61 +249,71 @@ csim_fns.c:
 #  File has not been updated.
 
 # Not a target:
+cache.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 csim_fns.h:
-#  Implicit rule search has been done.
-#  Last modified 2021-10-12 22:00:05.5596646
-#  File has been updated.
-#  Successfully updated.
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 clean:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 16):
+#  recipe to execute (from 'Makefile', line 26):
 	rm -f csim *.o
 
-main.o: main.c csim_fns.h
+# Not a target:
+csim_fns.cpp:
 #  Implicit rule search has not been done.
-#  Implicit/static pattern stem: ''
-#  Last modified 2021-10-12 22:19:23.1596646
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# automatic
-# @ := main.o
-# automatic
-# % := 
-# automatic
-# * := 
-# automatic
-# + := main.c csim_fns.h
-# automatic
-# | := 
-# automatic
-# < := main.c
-# automatic
-# ^ := main.c csim_fns.h
-# automatic
-# ? := main.c
-# variable set hash-table stats:
-# Load=8/32=25%, Rehash=0, Collisions=1/13=8%
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+set.h:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+main.o: main.cpp csim_fns.h
+#  Implicit rule search has not been done.
+ 
+#  File does not exist.
+#  File has not been updated.
 #  recipe to execute (from 'Makefile', line 8):
-	$(CC) $(CFLAGS) -c main.c
+	$(CC) $(CFLAGS) -c main.cpp
+
+# Not a target:
+set.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+block.o: block.cpp block.h
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 14):
+	$(CC) $(CFLAGS) -c block.cpp
 
 # files hash-table stats:
-# Load=11/1024=1%, Rehash=0, Collisions=0/32=0%
+# Load=20/1024=2%, Rehash=0, Collisions=1/46=2%
 # VPATH Search Paths
 
- 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 20 / storage = 175 B / avg = 8 B
-# current buf: size = 8162 B / used = 175 B / count = 20 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 33 / storage = 287 B / avg = 8 B
+# current buf: size = 8162 B / used = 287 B / count = 33 / avg = 8 B
 
-# strcache performance: lookups = 41 / hit rate = 51%
+# strcache performance: lookups = 58 / hit rate = 43%
 # hash-table stats:
-# Load=20/8192=0%, Rehash=0, Collisions=1/41=2%
-# Finished Make data base on Thu Oct 14 14:53:07 2021
+# Load=33/8192=0%, Rehash=0, Collisions=1/58=2%
+# Finished Make data base on Thu Oct 14 15:06:56 2021
 
  
