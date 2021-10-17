@@ -3,26 +3,40 @@
 
 #include <iostream>
 
-using namespace std;
-
 class Block {
     public:
-        //public functions/props declarations
+    //TODO: create getters & setters for all fields (after we see what we need)
+    Block() { //default - empty and unmodified
+    _isDirty = false;
+    _isEmpty = true; 
+    _tag = "";
+    _timeCreated = 0;
+    _lastAccessTime = 0;
+    };
+
+    Block(std::string tag) { //default - empty and unmodified
+    _tag = "";
+    _isDirty = false;
+    _isEmpty = true; 
+    _timeCreated = 0;
+    _lastAccessTime = 0;
+    };
+
+
     private:
-    uint32_t address;
-    uint32_t lastAccessTime;
-    bool isDirty;
+
+    //fields
+    bool _isDirty;
+    bool _isEmpty;
+    std::string _tag;
+    uint32_t _timeCreated;
+    uint32_t _lastAccessTime;
 
     
-        //helper function/props declarations
-
-    Block() {
-    }; //constructor
+    
 };
 
-Block::Block() {
-    
-}
+
 
 
 #endif  //!__BLOCK__H__
