@@ -18,7 +18,7 @@ class Cache {
 
     //returns int
     Cache::findAddressInCache(cache, address){
-        // preform hash function to see if correlating block has address
+        //preform hash function to see if correlating block has address
         //If yes, return 1
         //If no, return 0
         //Don't update any counters //TODO: check if we should update cycles...But i really don't think so
@@ -71,6 +71,8 @@ class Cache {
         //if writethrough, load to memory (aka Cycles += 100)
 
     }
+
+
 
 }
 #endif  //!__CACHE__H__
