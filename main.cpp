@@ -5,17 +5,31 @@
 #include <string>
 #include <cstring>
 #include <sstream>
+
+#define NUM_ARGS 8
+
 using namespace std;
 
 //TODO: clarify where we need to use uint32_t vs unsigned int?
 
 int main(int argc, char ** argv) {
 
+    /*
+    
     //get num args:
 
-    if (argc != 7) {
+    if (argc != NUM_ARGS) {
         return printErrorMsg("Invalid cmd line args.");
     } else {
+
+        //check if arguments are valid & parse them:
+        //must be unsigned int, greater than 0 & a power of 2
+        getValidInteger(argv[1]); 
+        getValidInteger(argv[2]);
+        getValidInteger(argv[3]);
+        //parse 
+
+    
     uint32_t numSets = 0U;
     uint32_t numBlocks = 0U;
     uint32_t blockSize = 0U;
@@ -54,7 +68,6 @@ int main(int argc, char ** argv) {
     } else {
         return printErrorMsg("Invalid cache features.");
     }
-
     unsigned int writeAllocate = 0U;
     unsigned int writeBack = 0U;
     // unsigned int lru = 0U;
@@ -97,103 +110,40 @@ int main(int argc, char ** argv) {
         return printErrorMsg("Contradictory arguments");
     }
 
+    */
+
 
     //make cache
 
-    Cache cache = new Cache(/* fill out init fields*/);
-    cache.numSets = numSets;
-    // //implement log base2 function or get it from math library
-    cache.indexLen = log_base2(blockSize);
-    cache.offsetLen = log_base2(numSets);
-    cache.tagLen = 32- (cache.offsetLen + cache.indexLen);
 
-    //while(getline(&std::cin, line) )
+    std::string line;
+    std::string operation; //load or store
+    uint32_t address; //hex address
+    uint32_t unusedNum; //thing @ end of the line
 
+    getline(std::cin, line);
+    while(!std::cin.eof()) {
+        //create string stream to extract info from line
+        std::istringstream line_stream(line);
+        //split line into "operation | address (hex num) | unusedNum (decimal num)"
+        line_stream >> operation;
+        line_stream >> std::hex >> address;
+        line_stream >> std::dec >> unusedNum;
 
-    /* //can use scanf with stdin to get trace lines
-    char storeOrLoad;
-    uint32_t address;
-    int third_thing; //TODO: we don't need this, right
-    //want to consume third thing and move onto next line -> does it automatically parse it?
-    while(scanf(" %c %x %d ", &storeOrLoad, &address, &third_thing) == 3) {
-        //yes =1 , no = 0;
-        int isDataInCache = findAddressInCache(cache, address);
+        std::cout << operation << " " << address << std::endl;
+        return 0;
 
-        if(storeOrLoad == 's') {
-            stores++;
-            if(isDataInCache == 1) {
-                storeHits++;
-                return;
-            }
-            if(isDataInCache == 0) { //cache miss
-                storeMisses++;
-                //pass in all relevant parameter. Only updates Cycles!
-                cache.handelStoreHit(cache, address, writeAllocate, writeBack);
-                
-            }
-            else {  //if cache hit(should increment loadHits //TODO: should you? Its store here not load!)
-                storeHits++;
-                cache.handleStoreMiss(cache, address, writeAllocate, writeBack)
-               }
-        } 
-        
-        else if(storeOrLoad == 'l') {
-            loads++;
-           if(isDataInCache == 0) {
-               loadMisses++;
-               cache.handleLoadMiss(cache, address, writeAllocate, writeBack, LIFO, LRU);
-               //loadMissingData();
-               //cycles += numCyclesToLoadData + 1;
-           } else if(isDataInCache == 1) {//cache hit
-               loadHits++;
-                cycles++;
-                //update num uses of cache blocks
-           }
-        } else {
-            return printErrorMsg("trace file had invalid operation.");
-        }
-    } */
-    //output results
-    //displayResults(loads, stores, loadHits, loadMisses, storeHits, storeMisses, cycles);
+        //do stuff for line -> read/write
 
 
 
-    // free any memory allocated in cache & other cleanup
-   // free(cache.sets);
-    //for(unsigned int i = 0; i < numSets; i++) {
-    //    free((cache.sets)[i].blocks);
-    //}
-    return 0; //success!
+        //get next line
+        getline(std::cin, line);
+
     }
+
+    //break out of loop: terminate & print results or error handling stuff
+    
+
+    return 0;    
 }
-
-
-//  uint32_t MIN_BLOCK_SIZE = 4U;
-/* get input file
-
-parse each memory access: field1 field2 field3
-field1= l or s
-field2=32 bit memory address in hex
-field 3(ignore)
-assume each load/store operation accesses at most 4 bytes of data & no load/store accesses data that spans more than 1 cache block (i.e. lines)
-
-cache sim takes following cmd line args
-
-- num sets in cache (pos pow of 2)
-- num of blocks in each set (pos pow of 2)
-- num of bytes in each block;  (pos pow of 2, at least 4)
-- write-allocate OR no-write-allocate
-- write-through OR write-back
-- lru (least-recently-used) or fifo evictions
-
-
- error handling specs:
-- block size is not a power of 2
-- number of sets is not a power of 2
-- block size is less than 4
- - write-back and no-write-allocate were both specified
- - If the configuration parameters are invalid, the program should
-
-Print an error message to stderr or std::cerr, and
-Exit with a non-zero exit code
-*/
