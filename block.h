@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+namespace CacheSimulator {
 class Block
 {
 public:
@@ -75,5 +76,8 @@ private:
     uint32_t _timeCreated;
     uint32_t _lastAccessTime;
 };
+
+
+}
 
 #endif //!__BLOCK__H__

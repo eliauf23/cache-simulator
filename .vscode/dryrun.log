@@ -1,7 +1,0 @@
-make all --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/eliauf/csf_assign03'
-gcc -g -Wall -Wextra -pedantic -std=gnu11 -c main.c
-gcc -g -Wall -Wextra -pedantic -std=gnu11 -c csim_fns.c
-gcc -o csim main.o csim_fns.o
-make: Leaving directory '/home/eliauf/csf_assign03'
- 
