@@ -33,7 +33,7 @@ class Cache {
 
                 //TODO: handle write-allocate case
                 //bring the relevant memory block into the cache before the store proceeds             
-                //cache.handleWriteMemory(); //overload method <- writing to from memory just increments cycles. do that locally
+                //cycles += 100 (bc we access memory)
 
 
         } else { //is no-write allocate
