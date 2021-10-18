@@ -1,10 +1,10 @@
 CC = g++
 CFLAGS = -g -Wall -Wextra -pedantic -std=c++14
 
-csim: main.o csim_fns.o
+csim: main.o csim_fns.o block.o set.o cache.o
 	$(CC) -o csim main.o csim_fns.o
 
-main.o: main.cpp csim_fns.h
+main.o: main.cpp csim_fns.h block.h set.h cache.h
 	$(CC) $(CFLAGS) -c main.cpp
 
 csim_fns.o: csim_fns.cpp csim_fns.h
@@ -18,7 +18,6 @@ set.o: set.cpp set.h
 
 cache.o: cache.cpp cache.h
 	$(CC) $(CFLAGS) -c cache.cpp
-
 
 all : csim
 
