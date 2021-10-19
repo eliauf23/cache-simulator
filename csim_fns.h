@@ -27,34 +27,20 @@
 #include <cstring>
 #include <cstdio>
 
-
-
-
-
-
-//input parameters are num sets = s, num blocks = b, num bytes per block= block_size
-//
-
 namespace CacheSimulator {
 
-uint32_t getValidInteger(std::string str);
-
-//prints out results with required formatting
-void displayResults(uint32_t loads, uint32_t stores, uint32_t loadHits, uint32_t loadMisses, uint32_t storeHits, uint32_t storeMisses, uint32_t cycles);
-
-//returns 1 if number is a power of 2, 0 if not a power of 2
-unsigned int isPowerOfTwo(uint32_t num);
+    uint32_t getValidInteger(std::string str);
 
 //returns -1 if cache miss, else returns index in cache
-//int findAddressInCache(Cache cache, uint32_t address);
+    unsigned int isPowerOfTwo(uint32_t num);
 
-unsigned int isPowerOfTwo(uint32_t num);
-
-int printErrorMsg(const std::string& errorMsg);
+    int printErrorMsg(const std::string &errorMsg);
     //input parsing functions
 
-void displayResults(int loadHits, int loadMisses, int storeHits, int storeMisses, int totalCycles);
 
+    int checkIfArgsValid(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5,
+                         std::string s6);
 }
 
-#endif  //!__CSIM_FNS__H__
+
+#endif  //CSIM_FNS_H

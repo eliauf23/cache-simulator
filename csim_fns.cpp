@@ -1,5 +1,5 @@
 #include "csim_fns.h"
-
+#include "cache.h"
 
 
 namespace CacheSimulator
@@ -28,23 +28,6 @@ unsigned int isPowerOfTwo(uint32_t num) {
         return retVal;
     }
 
-    //prints out results with required formatting
-    void displayResults(uint32_t loadHits, uint32_t loadMisses, uint32_t storeHits, uint32_t storeMisses)
-    {
-        uint32_t loads, stores, cycles = 0U;
-        loads = loadMisses + loadHits;
-        stores = storeMisses + storeHits;
-        cycles = loads + stores;
-
-        std::cout << "Total loads: " << loads << std::endl;
-        std::cout << "Total stores: " << stores << std::endl;
-        std::cout << "Load hits: " << loadHits << std::endl;
-        std::cout << "Load misses: " << loadMisses << std::endl;
-        std::cout << "Store hits: " << storeHits << std::endl;
-        std::cout << "Store misses: " << storeMisses << std::endl;
-        std::cout << "Total cycles: " << cycles << std::endl;
-        return;
-    }
 
     int printErrorMsg(const std::string &errorMsg) {
         std::cerr << errorMsg << std::endl;
@@ -53,8 +36,86 @@ unsigned int isPowerOfTwo(uint32_t num) {
     //input parsing functions
 
 
-    void displayResults(int loadHits, int loadMisses, int storeHits, int storeMisses, int totalCycles);
+    int checkIfArgsValid(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5,
+                               std::string s6) {
 
-    int createCacheIfArgsValid(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5,
-                               std::string s6);
+
+            uint32_t blockSize;
+
+            //modularize all of the following into argument parsing/checking functions
+            if (!s1.empty() && std::stoi(s1) > 0) {
+                //check if not power of two
+                if (!isPowerOfTwo(std::stoi(s1))) {
+                    CacheSimulator::printErrorMsg("Num sets is not power of 2.");
+                    exit(1);
+                }
+            } else {
+                printErrorMsg("Invalid cache features.");
+                exit(1);
+
+
+            }
+
+            //determine if block number is valid
+            if (!s2.empty() && std::stoi(s2) > 0) {
+
+                if (!isPowerOfTwo(std::stoi(s2))) {
+                    //check if not power of two
+                    printErrorMsg("Num blocks is not power of 2.");
+                    exit(1);
+
+
+                }
+            } else {
+                printErrorMsg("Invalid cache features.");
+                exit(1);
+
+            }
+
+
+            if (!s3.empty() && std::stoi(s3) > 0) {
+                blockSize = std::stoi(s3);
+                if (!isPowerOfTwo(blockSize)) {
+                    //check if not power of two
+                    printErrorMsg("cache size not power of 2.");
+                    exit(1);
+                }
+                // error checking
+                if (blockSize < MIN_BLOCK_SIZE) {
+                    printErrorMsg("Invalid block size");
+                    exit(1);
+                }
+
+
+            } else {
+                printErrorMsg("Invalid cache features.");
+                exit(1);
+            }
+
+            if (s4 != "no-write-allocate" && "write-allocate" != s4) {
+                printErrorMsg("Problem with arg 4");
+                exit(1);
+            }
+
+            if (s5 != "write-through" && "write-back" != s5) {
+                printErrorMsg("Problem with arg 5");
+                exit(1);
+            }
+
+//don't need yet - commented out so don't get warning unused var
+
+
+            if (s6 != "fifo" && s6 != "lru") {
+                printErrorMsg("Problem with arg 6");
+                exit(1);
+            }
+
+            if (s4 == "no-write-allocate" && "write-back" == s5) {
+                printErrorMsg("Contradictory arguments");
+                exit(1);
+            }
+
+            return 0;
+
+    }
 }
