@@ -1,14 +1,7 @@
-#ifndef __CSIM_FNS__H__
-#define __CSIM_FNS__H__
+
 
 #ifndef CSIM_FNS_H
 #define CSIM_FNS_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-
 
 //define constants:
 
@@ -23,62 +16,28 @@
 #define MEM_LOAD_CYCLES 100U
 #define MEM_STORE_CYCLES 100U
 #define ADDRESS_LEN 32U
-
 #define MIN_BLOCK_SIZE 4U
+
+#include "csim_fns.h"
+#include <iostream>
+#include <string>
+#include <bitset>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+
+
+
+
+
 
 //input parameters are num sets = s, num blocks = b, num bytes per block= block_size
 //
 
-class CacheSimulator {
-    private:
-        uint32_t _numSets;
-        uint32_t _numBlocks;
-        uint32_t _blockSize;
-        uint32_t _storePolicy;
-        uint32_t _writePolicy;
-        uint32_t _evictionPolicy;
+namespace CacheSimulator {
 
-    CacheSimulator() {};
-    CacheSimulator(numSets, numBlocks, blockSize, storePolicy, writePolicy, evictionPolicy) {
-        _numSets = numSets;
-        _numBlocks = numBlocks;
-        _blockSize = blockSize;
-        _storePolicy = storePolicy;
-        _writePolicy = writePolicy;
-        _evictionPolicy = evictionPolicy;
-    };
-
-    public:
-}
-
-
-
-//use unsigned 32 bit integers for any memory addresses/indices
-typedef struct {
-    uint32_t dirty; //dirty bit - for write-back cache (tells you that you need to write changes back to memory before evicting block)
-    uint32_t valid; //valid bit
-    uint32_t tag;//tag - tells you the block you're in
-    uint32_t evictionPriority; //higher value indicates that it's not being accessed
-    // for LRU: measure of times set has been accessed, but this block hasn't been
-} Block;
-
-typedef struct {
-    uint32_t numBlocks; //number of blocks in this set
-    Block * blocks; //array of blocks
-    uint32_t numUnusedBlocks;
-
-} Set;
-
-typedef struct {
-    uint32_t numSets; //number of sets in this cache
-    Set * sets; //array of sets
-    uint32_t indexLen; //i.e. num bits in index
-    uint32_t offsetLen; //num bits in offset
-    //uint32_t addressLen = ADDRESS_LEN;
-    //not needed in direct mapping, but might need number of blocks per set for associative mapping
-} Cache;
-
-int printErrorMsg(char * msg);
+uint32_t getValidInteger(std::string str);
 
 //prints out results with required formatting
 void displayResults(uint32_t loads, uint32_t stores, uint32_t loadHits, uint32_t loadMisses, uint32_t storeHits, uint32_t storeMisses, uint32_t cycles);
@@ -87,9 +46,15 @@ void displayResults(uint32_t loads, uint32_t stores, uint32_t loadHits, uint32_t
 unsigned int isPowerOfTwo(uint32_t num);
 
 //returns -1 if cache miss, else returns index in cache
-int findAddressInCache(Cache cache, uint32_t address);
+//int findAddressInCache(Cache cache, uint32_t address);
 
-unsigned int log_base2(unsigned int num);
+unsigned int isPowerOfTwo(uint32_t num);
 
+int printErrorMsg(const std::string& errorMsg);
+    //input parsing functions
+
+void displayResults(int loadHits, int loadMisses, int storeHits, int storeMisses, int totalCycles);
+
+}
 
 #endif  //!__CSIM_FNS__H__
