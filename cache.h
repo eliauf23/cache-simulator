@@ -55,16 +55,10 @@ namespace CacheSimulator
             _tagLen = 32 - (_offsetLen + _indexLen);
 
             //initialize cache
-
+//todo: check to make sure this isn't causing segfault
             for (uint32_t i = 0; i < ns; i++)
             {
-                Set *set = new Set(i);
-
-                for (uint32_t j = 0; j < nb; j++)
-                {
-                    Block block = Block(false, false, 0, 0);
-                    set->addBlock(block);
-                }
+                Set *set = new Set(_numBlocks);
             }
         };
 

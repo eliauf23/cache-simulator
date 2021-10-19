@@ -76,6 +76,7 @@ namespace CacheSimulator
         if (_write == CacheSimulator::WRITE_BACK)
         {
             Set *s = findSet(index);
+            
             for (uint32_t i = 0; i < _numBlocks; i++)
             {
                 uint32_t thisTag = getTagFromAddress(address);
@@ -125,7 +126,7 @@ namespace CacheSimulator
         {
             for (uint32_t i = 0U; i < _numBlocks; i++)
             {
-                if (s->getBlockAtIndex(i)->_isValid && s->getBlockAtIndex(i)->_tag == tag)
+                if (s->getBlockAtIndex(i)->isValid() && s->getBlockAtIndex(i)->getTag() == tag)
                 {
                     return i;
                 }
