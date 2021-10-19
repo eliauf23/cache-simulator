@@ -29,12 +29,12 @@ public:
 
     void resetTime();
 
-
-private:
-    //fields
-    bool _isDirty;
-    bool _isValid; //if empty -> not valid
+//TODO: make these fields private
+    bool _isValid;
     uint32_t _tag; //identifier
+private:
+
+    bool _isDirty;
     uint32_t _time; //counter
 };
 
