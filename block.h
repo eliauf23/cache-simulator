@@ -1,27 +1,44 @@
-#ifndef __BLOCK__H__
-#define __BLOCK__H__
+#ifndef BLOCK_H
+#define BLOCK_H
 
 #include <iostream>
-using namespace std;
 
-class Block {
-    public:
-        //public functions/props declarations
-    private:
-    uint32_t address;
-    uint32_t lastAccessTime;
-    bool isDirty;
+namespace CacheSimulator {
+class Block
+{
+public:
+    Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time);
 
-    
-        //helper function/props declarations
+    bool isDirty() const;
 
-    Block() {
-    }; //constructor
+    void setDirty(bool isDirty);
+
+    bool isValid() const;
+
+    void setValid(bool isValid);
+
+    uint32_t getTag() const;
+
+    void setTag(uint32_t tag);
+
+    uint32_t getTime() const;
+
+    void setTime(uint32_t time);
+
+    void incrementTime();
+
+    void resetTime();
+
+//TODO: make these fields private
+    bool _isValid;
+    uint32_t _tag; //identifier
+private:
+
+    bool _isDirty;
+    uint32_t _time; //counter
 };
 
-Block::Block() {
-    
+
 }
 
-
-#endif  //!__BLOCK__H__
+#endif //BLOCK_H

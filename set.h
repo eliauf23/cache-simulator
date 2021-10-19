@@ -1,53 +1,43 @@
-#ifndef __SET__H__
-#define __SET__H__
-
+#ifndef SET_H
+#define SET_H
 
 #include "block.h"
 
 #include <iostream>
 #include <vector>
 
-using namespace std::vector;
-using namespace Block;
+namespace CacheSimulator
+{
 
-namespace Set {
-    
-class Set {
-    private:
-    std::vector <Block> blocks; //array of blocks
-    //blockTag - string?
-
-    bool hasData = false;
-
-
-
+    class Set {
     public:
+        Set() {
+            _numBlocks = 0;
+            _emptyBlocks = 0;
+        };
+        Set(uint32_t numBlocks);
 
-    //constructor to create empty set
-    Set() {
-        hasData = true;
+        void addBlock(Block block);
+        void evictLRU(uint32_t i);
+        void evictFIFO(uint32_t i);
+
+        Block* getBlockAtIndex(uint32_t i);
+        bool isEmpty();
+        uint32_t getNumBlocks() const;
+
+        void setNumBlocks(uint32_t numBlocks);
+
+        uint32_t getEmptyBlocks() const;
+
+        void setEmptyBlocks(uint32_t emptyBlocks);
+
+    private:
+        std::vector <Block> _blocks;
+        uint32_t _emptyBlocks;
+        uint32_t _numBlocks;
+
+
     };
-
-    bool hasData() {
-        return hasData;
-    }
-
-    unsigned int getSize() {
-        return blocks.size();
-    }
-
-    Block findBlock(std::string tag) {
-        //find block will return null value if DNE
-    }
-    bool writeBlock(uint32_t address) {
-        //return true if write is sucessful
-        //false otherwise
-        
-    }
-
-
-}
 }
 
-
-#endif //!__SET__H__
+#endif //SET_H

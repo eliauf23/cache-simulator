@@ -1,53 +1,136 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstdint>
-#include <cstring>
-#include <limits>
 #include "csim_fns.h"
+#include "cache.h"
+#include <bitset>
 
-int printErrorMsg(char *msg)
-{
-    fprintf(stderr, "%s\n", msg);
-    return 1; //exit or return?
-}
 
-void displayResults(uint32_t loads, uint32_t stores, uint32_t loadHits, uint32_t loadMisses, uint32_t storeHits, uint32_t storeMisses, uint32_t cycles)
+namespace CacheSimulator
 {
-    printf("Total loads: %u\nTotal stores: %u\nLoad hits: %u\nLoad misses: %u\nStore hits: %u\nStore misses: %u\nTotal cycles: %u\n",
-           loads, stores, loadHits, loadMisses, storeHits, storeMisses, cycles);
-}
+    //returns 1 if number is a power of 2, 0 if not a power of 2
 
-unsigned int isPowerOfTwo(uint32_t num)
-{
-    return (num && !(num & (num - 1)));
-}
-
-int findAddressInCache(Cache cache, uint32_t address)
-{
-    //doesn't do anything yet - just placeholder stuff
-    int something = cache.numSets + address;
-    something = -1;
-    return something;
-}
-
-unsigned int log_base2(unsigned int num)
-{
-    if (num == 0)
-    {
-        return UINT_MAX; //TODO: I think this is preferable to using negatives. Thoughts?
+  std::string getIndex(int idxLen, int tagLen, unsigned int address) {
+        std::bitset<32U> bitAddress(address);
+        std::string index = bitAddress.to_string();
+        return index.substr(tagLen, idxLen);
     }
-    else if (num == 1)
-    {
-        return 0;
+
+    
+    std::string getTag(int tagLen, unsigned int address) {
+        std::bitset<ADDRESS_LEN> bitTag(address);
+        std::string tag = bitTag.to_string();
+
+        return tag.substr(0, tagLen);
     }
-    else
+
+unsigned int isPowerOfTwo(uint32_t num) {
+            return (num && !(num & (num - 1)));
+
+}
+    //parses integer from input str if greater than 0 or a power of 2
+    //if error: returns -1
+    uint32_t getValidInteger(std::string str)
     {
-        unsigned int result = 0U;
-        while (num > 1)
+        uint32_t retVal = -1;
+
+        if (!str.empty() && std::stoi(str) > 0)
         {
-            num = num >> 1;
-            num++;
+            retVal = std::stoi(str);
+            //check if not power of two
+            if (!isPowerOfTwo(retVal))
+            {
+                return -1;
+            }
         }
-        return result;
+        return retVal;
+    }
+
+
+    int printErrorMsg(const std::string &errorMsg) {
+        std::cerr << errorMsg << std::endl;
+        exit(1);
+    }
+    //input parsing functions
+
+
+    int checkIfArgsValid(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5,
+                               std::string s6) {
+
+
+            uint32_t blockSize;
+
+            //modularize all of the following into argument parsing/checking functions
+            if (!s1.empty() && std::stoi(s1) > 0) {
+                //check if not power of two
+                if (!isPowerOfTwo(std::stoi(s1))) {
+                    CacheSimulator::printErrorMsg("Num sets is not power of 2.");
+                    exit(1);
+                }
+            } else {
+                printErrorMsg("Invalid cache features.");
+                exit(1);
+
+
+            }
+
+            //determine if block number is valid
+            if (!s2.empty() && std::stoi(s2) > 0) {
+
+                if (!isPowerOfTwo(std::stoi(s2))) {
+                    //check if not power of two
+                    printErrorMsg("Num blocks is not power of 2.");
+                    exit(1);
+
+
+                }
+            } else {
+                printErrorMsg("Invalid cache features.");
+                exit(1);
+
+            }
+
+
+            if (!s3.empty() && std::stoi(s3) > 0) {
+                blockSize = std::stoi(s3);
+                if (!isPowerOfTwo(blockSize)) {
+                    //check if not power of two
+                    printErrorMsg("cache size not power of 2.");
+                    exit(1);
+                }
+                // error checking
+                if (blockSize < MIN_BLOCK_SIZE) {
+                    printErrorMsg("Invalid block size");
+                    exit(1);
+                }
+
+
+            } else {
+                printErrorMsg("Invalid cache features.");
+                exit(1);
+            }
+
+            if (s4 != "no-write-allocate" && "write-allocate" != s4) {
+                printErrorMsg("Problem with arg 4");
+                exit(1);
+            }
+
+            if (s5 != "write-through" && "write-back" != s5) {
+                printErrorMsg("Problem with arg 5");
+                exit(1);
+            }
+
+//don't need yet - commented out so don't get warning unused var
+
+
+            if (s6 != "fifo" && s6 != "lru") {
+                printErrorMsg("Problem with arg 6");
+                exit(1);
+            }
+
+            if (s4 == "no-write-allocate" && "write-back" == s5) {
+                printErrorMsg("Contradictory arguments");
+                exit(1);
+            }
+
+            return 0;
+
     }
 }
