@@ -29,7 +29,8 @@ namespace CacheSimulator
         FIFO = 1
     };
 
-    class Cache {
+    class Cache
+    {
 
     public:
         Cache() = default;
@@ -46,27 +47,26 @@ namespace CacheSimulator
             _loadHits = 0;
             _loadMisses = 0;
             _storeHits = 0;
-            _storeMisses  = 0;
+            _storeMisses = 0;
             _cycles = 0;
 
-        _offsetLen = log_base2(_blockSize);
-         _indexLen = log_base2(_numSets);
-         _tagLen = 32-(_offsetLen +_indexLen);
-
+            _offsetLen = log_base2(_blockSize);
+            _indexLen = log_base2(_numSets);
+            _tagLen = 32 - (_offsetLen + _indexLen);
 
             //initialize cache
 
-            for(uint32_t i = 0; i < ns; i++) {
+            for (uint32_t i = 0; i < ns; i++)
+            {
                 Set *set = new Set(i);
 
-                for(uint32_t j = 0; j < nb; j++) {
-                    Block block = Block(false,false,0,0);
+                for (uint32_t j = 0; j < nb; j++)
+                {
+                    Block block = Block(false, false, 0, 0);
                     set->addBlock(block);
                 }
             }
         };
-
-
 
         static uint32_t log_base2(uint32_t num)
         {
@@ -98,7 +98,6 @@ namespace CacheSimulator
             return _indexLen;
         }
 
-
         void setIndexLen(uint32_t indexLen)
         {
             _indexLen = indexLen;
@@ -126,7 +125,6 @@ namespace CacheSimulator
 
         void setWrite(Write write);
 
-
         //set functions:
         Set *addSet();
         Set *findSet(uint32_t index);
@@ -138,7 +136,7 @@ namespace CacheSimulator
         void loadFromMainMemory(uint32_t address);
         void printResults();
 
-        void handleStoreHit(uint32_t address, uint32_t index);
+        void handleStoreHit(uint32_t address);
         /* {
                 //Take in all relevant parameters.
                 //Follow logic to update chache/not update
@@ -156,7 +154,7 @@ namespace CacheSimulator
                 }
             } */
 
-        void handleStoreMiss(uint32_t address, uint32_t index);
+        void handleStoreMiss(uint32_t address);
 
         /*   {
                 if (writeBack)
@@ -176,7 +174,7 @@ namespace CacheSimulator
                     //write to cache & write to memory!
                 } */
 
-        void handleLoadMiss(uint32_t address, uint32_t index);
+        void handleLoadMiss(uint32_t address);
         /* {
                     //find corresponding cache block
                     //is there data there?
@@ -190,13 +188,9 @@ namespace CacheSimulator
 
         //functions to initialize cache
 
-        void handleLoadHit(uint32_t index);
-
+        void handleLoadHit(uint32_t address);
 
         //results!
-
-        uint32_t _loadHits = 0U;
-        uint32_t _loadMisses = 0U;
 
         void incLoadHits();
 
@@ -208,14 +202,18 @@ namespace CacheSimulator
 
         void incCycles();
         void addToCycles(uint32_t n);
-        uint32_t _storeHits  = 0U;
+
+        uint32_t _loadHits = 0U;
+        uint32_t _loadMisses = 0U;
+        uint32_t _storeHits = 0U;
         uint32_t _storeMisses = 0U;
-        uint32_t _cycles  = 0U;
+        uint32_t _cycles = 0U;
+
     public:
         uint32_t getNumBlocks() const;
         std::unordered_map<uint32_t, Set> sets;
-    private:
 
+    private:
         //base fields that will be set from constructor
         uint32_t _currNumSets = 0U;
         uint32_t _numSets = 0U;
@@ -232,8 +230,6 @@ namespace CacheSimulator
         Allocation _alloc;
         Write _write;
         Eviction _evictionType;
-
-
     };
     //end of cache class
 }

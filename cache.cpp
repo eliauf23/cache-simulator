@@ -2,6 +2,7 @@
 #include "block.h"
 #include "cache.h"
 #include <string>
+#include <sstream>
 #include <cstdlib>
 #include <map>
 #include <unordered_map>
@@ -30,8 +31,9 @@ namespace CacheSimulator
         return set;
     }
 
-    void Cache::handleStoreMiss(uint32_t address, uint32_t index)
+    void Cache::handleStoreMiss(uint32_t address)
     {
+        uint32_t index = getIndexFromAddress(address);
 
         incStoreMisses();
 
@@ -44,9 +46,9 @@ namespace CacheSimulator
             if (getWrite() == CacheSimulator::WRITE_BACK)
             {
                 //todo: think segfault is happening here
-                if(findSet(index)->getBlockAtIndex(cacheHasAddress) != nullptr) {
-                findSet(index)->getBlockAtIndex(cacheHasAddress)->setDirty(true);
-
+                if (findSet(index)->getBlockAtIndex(cacheHasAddress) != nullptr)
+                {
+                    findSet(index)->getBlockAtIndex(cacheHasAddress)->setDirty(true);
                 }
             }
             else
@@ -62,9 +64,11 @@ namespace CacheSimulator
         }
     }
 
-    void Cache::handleStoreHit(uint32_t address, uint32_t index)
+    void Cache::handleStoreHit(uint32_t address)
     {
-      //  uint32_t cacheHasAddress = find(address);
+
+        uint32_t index = getIndexFromAddress(address);
+        //  uint32_t cacheHasAddress = find(address);
         std::cout << "entered handle store hit" << std::endl;
 
         incStoreHits();
@@ -74,18 +78,17 @@ namespace CacheSimulator
             Set *s = findSet(index);
             for (uint32_t i = 0; i < _numBlocks; i++)
             {
-                uint32_t thisTag = address >> (_indexLen + _offsetLen); //todo: check!
+                uint32_t thisTag = getTagFromAddress(address);
                 if (s->getBlockAtIndex(i)->getTag() == thisTag)
                 {
                     s->getBlockAtIndex(i)->setDirty(true);
                 }
             }
-        incCycles();
+            incCycles();
         }
         else
         {
             addToCycles(100);
-
         }
         if (_evictionType == CacheSimulator::LRU)
         {
@@ -94,15 +97,16 @@ namespace CacheSimulator
         }
     }
 
-    void Cache::handleLoadMiss(uint32_t address, uint32_t index)
+    void Cache::handleLoadMiss(uint32_t address)
     {
         incLoadMisses();
         loadFromMainMemory(address);
         incCycles();
     }
 
-    void Cache::handleLoadHit(uint32_t index)
+    void Cache::handleLoadHit(uint32_t address)
     {
+        uint32_t index = getIndexFromAddress(address);
         incLoadHits();
         incCycles();
         if (_evictionType == CacheSimulator::LRU)
@@ -114,16 +118,21 @@ namespace CacheSimulator
 
     uint32_t Cache::find(uint32_t address)
     {
-        Set set = sets[getIndexFromAddress(address)];
-        uint32_t tag = address >> (_indexLen + _offsetLen);
-        for (uint32_t i = 0U; i < _numBlocks; i++)
+        uint32_t index = getIndexFromAddress(address);
+        uint32_t tag = getTagFromAddress(address);
+        Set *s = findSet(index);
+        if (s != nullptr)
         {
-            if (set.getBlockAtIndex(i)->_isValid && set.getBlockAtIndex(i)->_tag == tag)
+            for (uint32_t i = 0U; i < _numBlocks; i++)
             {
-                return i;
+                if (s->getBlockAtIndex(i)->_isValid && s->getBlockAtIndex(i)->_tag == tag)
+                {
+                    return i;
+                }
             }
         }
-        return _numBlocks; //= associativity?
+
+        return _numBlocks; //index will always be less than associativity
     }
 
     uint32_t Cache::getIndexFromAddress(uint32_t address) const
@@ -138,9 +147,12 @@ namespace CacheSimulator
     }
     uint32_t Cache::getTagFromAddress(uint32_t address) const
     {
-        //TODO: implement if nec
-        return 0U;
-
+        std::bitset<32U> bitTag(address);
+        std::string tagStr = bitTag.to_string().substr(0, _tagLen);
+        uint32_t tag;
+        std::stringstream tag_stream(tagStr);
+        tag_stream >> std::dec >> tag;
+        return tag;
     }
     uint32_t Cache::getOffsetFromAddress(uint32_t address) const
     {
@@ -173,8 +185,8 @@ namespace CacheSimulator
             }
         }
         else
-        { 
-            
+        {
+
             //get index to evict - i.e. max time?
             uint32_t indexToEvict = 0U;
             uint32_t maxTime = 0U;
@@ -239,7 +251,7 @@ namespace CacheSimulator
 
     void Cache::incLoadHits()
     {
-       _loadHits++;
+        _loadHits++;
     }
 
     void Cache::incLoadMisses()
