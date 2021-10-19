@@ -4,3 +4,9 @@ csim
 
 .o*
 main.o
+.vscode/dryrun.log
+.vscode/settings.json
+/.vscode
+
+.vscode/settings.json
+.vscode/configurationCache.log

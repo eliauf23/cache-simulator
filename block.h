@@ -1,42 +1,44 @@
-#ifndef __BLOCK__H__
-#define __BLOCK__H__
+#ifndef BLOCK_H
+#define BLOCK_H
 
 #include <iostream>
 
-class Block {
-    public:
-    //TODO: create getters & setters for all fields (after we see what we need)
-    Block() { //default - empty and unmodified
-    _isDirty = false;
-    _isEmpty = true; 
-    _tag = "";
-    _timeCreated = 0;
-    _lastAccessTime = 0;
-    };
+namespace CacheSimulator {
+class Block
+{
+public:
+    Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time);
 
-    Block(std::string tag) { //default - empty and unmodified
-    _tag = "";
-    _isDirty = false;
-    _isEmpty = true; 
-    _timeCreated = 0;
-    _lastAccessTime = 0;
-    };
+    bool isDirty() const;
 
+    void setDirty(bool isDirty);
 
-    private:
+    bool isValid() const;
 
-    //fields
+    void setValid(bool isValid);
+
+    uint32_t getTag() const;
+
+    void setTag(uint32_t tag);
+
+    uint32_t getTime() const;
+
+    void setTime(uint32_t time);
+
+    void incrementTime();
+
+    void resetTime();
+
+//TODO: make these fields private
+    bool _isValid;
+    uint32_t _tag; //identifier
+private:
+
     bool _isDirty;
-    bool _isEmpty;
-    std::string _tag;
-    uint32_t _timeCreated;
-    uint32_t _lastAccessTime;
-
-    
-    
+    uint32_t _time; //counter
 };
 
 
+}
 
-
-#endif  //!__BLOCK__H__
+#endif //BLOCK_H
