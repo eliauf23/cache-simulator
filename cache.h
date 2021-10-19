@@ -1,8 +1,12 @@
-#ifndef __CACHE__H__
-#define __CACHE__H__
-#include "block.h";
-#include "set.h";
+#ifndef CACHE_H
+#define CACHE_H
+
+#include "set.h"
+#include "block.h"
 #include <unordered_map>
+#include <string>
+#include <cstdint>
+#include <climits>
 
 namespace CacheSimulator
 {
@@ -25,41 +29,116 @@ namespace CacheSimulator
         FIFO = 1
     };
 
-    enum Mapping
-    {
-        DIRECT_MAPPED = 1,
-        SET_ASSOCIATIVE = 2,
-        FULLY_ASSOCIATIVE = 3
-    };
-
-    class Cache
-    {
+    class Cache {
 
     public:
-        Cache(uint32_t num_sets, uint32_t num_blocks, uint32_t block_size, uint32_t miss_strategy, uint32_t write_strategy, uint32_t evict_strategy){};
+        Cache() = default;
+
+        Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e)
+        {
+            _numSets = ns;
+            _numBlocks = nb;
+            _blockSize = b_size;
+            _alloc = a;
+            _write = w;
+            _evictionType = e;
+            _currNumSets = 0;
+            _loadHits = 0;
+            _loadMisses = 0;
+            _storeHits = 0;
+            _storeMisses  = 0;
+            _cycles = 0;
+
+        _offsetLen = log_base2(_blockSize);
+         _indexLen = log_base2(_numSets);
+         _tagLen = 32-(_offsetLen +_indexLen);
+
+
+            //initialize cache
+
+            for(uint32_t i = 0; i < ns; i++) {
+                Set *set = new Set(i);
+
+                for(uint32_t j = 0; j < nb; j++) {
+                    Block block = Block(false,false,0,0);
+                    set->addBlock(block);
+                }
+            }
+        };
+
+
+
+        static uint32_t log_base2(uint32_t num)
+        {
+            uint32_t result = 0U;
+
+            if (num == 0)
+                return UINT_MAX;
+            else if (num == 1)
+                return 0;
+            else
+            {
+                while (num > 1)
+                {
+                    num = num >> 1;
+                    result++;
+                }
+                return result;
+            }
+        }
 
         //TODO:implement parameterized constructor
+        uint32_t getOffsetLen() const
+        {
+            return _offsetLen;
+        }
+
+        uint32_t getIndexLen() const
+        {
+            return _indexLen;
+        }
+
+
+        void setIndexLen(uint32_t indexLen)
+        {
+            _indexLen = indexLen;
+        }
+
+        void setTagLen(uint32_t tagLen)
+        {
+            _tagLen = tagLen;
+        }
+
+        void setOffsetLen(uint32_t offsetLen)
+        {
+            _offsetLen = offsetLen;
+        }
+        uint32_t getTagLen() const
+        {
+            return _tagLen;
+        }
+
+        Allocation getAlloc() const;
+
+        void setAlloc(Allocation alloc);
+
+        Write getWrite() const;
+
+        void setWrite(Write write);
+
 
         //set functions:
-        Set *addSet(std::string index);
-        Set *findSet(std::string index);
+        Set *addSet();
+        Set *findSet(uint32_t index);
+        uint32_t find(uint32_t address);
+        uint32_t getIndexFromAddress(uint32_t address) const;
+        uint32_t getTagFromAddress(uint32_t address) const;
+        uint32_t getOffsetFromAddress(uint32_t address) const;
 
-        //read:
-        void readFromCache(Block *block, Set *set, std::string tag);
-        int read(std::string index, std::string tag, std::string &firstTag);
+        void loadFromMainMemory(uint32_t address);
+        void printResults();
 
-        //write:
-
-        //returns int
-        uint32_t findAddressInCache(std::string address);
-
-        //preform hash function to see if correlating block has address
-        //If yes, return 1
-        //If no, return 0
-        //Don't update any counters //TODO: check if we should update cycles...But i really don't think so
-
-        //return void
-        uint32_t handelStoreHit(std::string address);
+        void handleStoreHit(uint32_t address, uint32_t index);
         /* {
                 //Take in all relevant parameters.
                 //Follow logic to update chache/not update
@@ -77,8 +156,8 @@ namespace CacheSimulator
                 }
             } */
 
-        //
-        uint32_t handleStoreMiss(Cache cache, std::string address);
+        void handleStoreMiss(uint32_t address, uint32_t index);
+
         /*   {
                 if (writeBack)
                 {
@@ -97,53 +176,65 @@ namespace CacheSimulator
                     //write to cache & write to memory!
                 } */
 
-       // uint32_t handleLoadMiss(cache, address, writeAllocate, writeBack, LIFO, LRU);
+        void handleLoadMiss(uint32_t address, uint32_t index);
         /* {
                     //find corresponding cache block
                     //is there data there?
                     //Yes: Is WB == true?
                     //if yes. Cycles += 100;
                     //regardless, load address to cache.
-                    //Mark block as valid.
+                    //mark block as valid.
                     //if writeback, mark as dirty
                     //if writethrough, load to memory (aka Cycles += 100)
                 } */
 
         //functions to initialize cache
 
+        void handleLoadHit(uint32_t index);
+
+
+        //results!
+
+        uint32_t _loadHits = 0U;
+        uint32_t _loadMisses = 0U;
+
+        void incLoadHits();
+
+        void incLoadMisses();
+
+        void incStoreHits();
+
+        void incStoreMisses();
+
+        void incCycles();
+        void addToCycles(uint32_t n);
+        uint32_t _storeHits  = 0U;
+        uint32_t _storeMisses = 0U;
+        uint32_t _cycles  = 0U;
+    public:
+        uint32_t getNumBlocks() const;
+        std::unordered_map<uint32_t, Set> sets;
     private:
-        std::unordered_map <std::string, Set> sets;
 
         //base fields that will be set from constructor
-        uint32_t _currNumSets;
-        uint32_t _numSets;
-        uint32_t _numBlocks;
-        uint32_t _blockSize;
+        uint32_t _currNumSets = 0U;
+        uint32_t _numSets = 0U;
+        uint32_t _numBlocks = 0U;
+
+        uint32_t _blockSize = 0U;
 
         //calculated fields
-        uint32_t _offsetLen;
-        uint32_t _indexLen;
-        uint32_t _tagLen;
-        uint32_t _associativity; //N-way associative
+        uint32_t _offsetLen = 0U;
+        uint32_t _indexLen = 0U;
+        uint32_t _tagLen = 0U;
 
         //cache properties (calculated as well)
         Allocation _alloc;
         Write _write;
         Eviction _evictionType;
-        Mapping _mappingType;
 
-        //results!
 
-        uint32_t _loadHits;
-        uint32_t _loadMisses;
-        uint32_t _storeHits;
-        uint32_t _storeMisses;
-        uint32_t _cycles;
-        //TODO: don;t store as fields and calculate when we print results
-        //uint32_t _totalHits = _loadHits + _storeHits;
-        // uint32_t _totalMisses = _loadMisses + _storeMisses;
-        // uint32_t _numCycles = _totalHits + _totalMisses;
-
-    }; //end of cache class
+    };
+    //end of cache class
 }
-#endif //!__CACHE__H__
+#endif //CACHE_H

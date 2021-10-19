@@ -3,229 +3,267 @@
 #include "cache.h"
 #include <string>
 #include <cstdlib>
+#include <map>
+#include <unordered_map>
 
 namespace CacheSimulator
 {
 
-    Set *addSet(std::string index)
+    //add set to cache as long as you don;t exceed maximum numsets
+    Set *Cache::addSet()
     {
-        Set *set = new Set();
-        sets[index] = *set;
-        _currNumSets++;
+        Set *set = new Set(_numBlocks);
+        if (_currNumSets + 1 < _numSets)
+        {
+            sets[_currNumSets++] = *set;
+        }
         return set;
     }
 
-    Set *findSet(std::string index)
+    Set *Cache::findSet(uint32_t index)
     {
-        std::unordered_map<std::string, Set>::iterator iter = sets.find(index);
-
+        std::unordered_map<uint32_t, Set>::iterator iter = sets.find(index);
         if (iter != sets.end())
             return &sets[index];
+        Set *set = new Set(_numBlocks);
 
-        Set *set = new Set(true);
         return set;
     }
 
-    void readFromCache(Block *block, Set *set, std::string tag)
+    void Cache::handleStoreMiss(uint32_t address, uint32_t index)
     {
-        if (block->isEmpty())
+
+        incStoreMisses();
+
+        if (getAlloc() == CacheSimulator::WRITE_ALLOCATE)
         {
-            delete block;
+            loadFromMainMemory(address);
+            incCycles();
+            uint32_t cacheHasAddress = find(address);
 
-            _loadMisses++;
-            
-            _cycles += 100 * _blockSize / 4 + 1;
-
-            if (set->getNumBlocksStored() == _numBlocks)
+            if (getWrite() == CacheSimulator::WRITE_BACK)
             {
-                block = set.findBlockFromTime(_numBlocks - 1);
-                if (_write == WRITE_BACK && block->isDirty())
-                {
-                    _cycles += 100 * _blockSize / 4;
-                    block->resetDirty();
+                //todo: think segfault is happening here
+                if(findSet(index)->getBlockAtIndex(cacheHasAddress) != nullptr) {
+                findSet(index)->getBlockAtIndex(cacheHasAddress)->setDirty(true);
+
                 }
-                set.countTimerAll();
-                block.resetTime();
-                block.updateTag(tag);
             }
             else
             {
-                set.countTimerAll();
-                block = new Block(tag);
-                set.addBlock(*block);
-                delete block;
+
+                addToCycles(100);
             }
         }
         else
         {
-            _loadHits++;
-            _cycles++;
-            if (_evictionType == LRU)
-                set->incTime(block->getLastAccessTime());
+
+            addToCycles(100);
         }
     }
 
-    int read(std::string index, std::string tag, std::string &firstTag)
+    void Cache::handleStoreHit(uint32_t address, uint32_t index)
     {
-        Set *set = findSet(index);
-        Block *block;
+      //  uint32_t cacheHasAddress = find(address);
+        std::cout << "entered handle store hit" << std::endl;
 
-        if (set.isEmpty())
+        incStoreHits();
+
+        if (_write == CacheSimulator::WRITE_BACK)
         {
-            delete set;
-            if (getNumSets() == _numSets)
+            Set *s = findSet(index);
+            for (uint32_t i = 0; i < _numBlocks; i++)
             {
-                std::cerr << "Index is invalid" << std::endl;
-                return -1;
+                uint32_t thisTag = address >> (_indexLen + _offsetLen); //todo: check!
+                if (s->getBlockAtIndex(i)->getTag() == thisTag)
+                {
+                    s->getBlockAtIndex(i)->setDirty(true);
+                }
             }
-            _loadMisses++;
-
-            set = addSet(index);
-            block = new Block(tag);
-            set.addBlock(*block);
-            firstTag = tag;
-
-            _cycles += 100 * _blockSize / 4 + 1;
-
-            delete set;
-            delete block;
+        incCycles();
         }
         else
         {
-            block = set.findBlock(tag);
-            readFromCache(block, set, tag);
-        }
-        set = NULL;
-        block = NULL;
+            addToCycles(100);
 
-        return 0;
+        }
+        if (_evictionType == CacheSimulator::LRU)
+        {
+            Set *s = findSet(index);
+            s->evictLRU(index);
+        }
     }
 
-    int write(std::string index, std::string tag, std::string &firstTag, bool &firstDirty)
+    void Cache::handleLoadMiss(uint32_t address, uint32_t index)
     {
-        Set *set = findSet(index);
-        Block *block = nullptr;
+        incLoadMisses();
+        loadFromMainMemory(address);
+        incCycles();
+    }
 
-        if (set.isEmpty())
+    void Cache::handleLoadHit(uint32_t index)
+    {
+        incLoadHits();
+        incCycles();
+        if (_evictionType == CacheSimulator::LRU)
         {
-            delete set;
-            _storeMisses++;
+            Set *s = findSet(index);
+            s->evictLRU(index);
+        }
+    }
 
-            if (getNumSets() == _numSets)
+    uint32_t Cache::find(uint32_t address)
+    {
+        Set set = sets[getIndexFromAddress(address)];
+        uint32_t tag = address >> (_indexLen + _offsetLen);
+        for (uint32_t i = 0U; i < _numBlocks; i++)
+        {
+            if (set.getBlockAtIndex(i)->_isValid && set.getBlockAtIndex(i)->_tag == tag)
             {
-                std::cerr << "Invalid index" << std::endl;
-                return -1;
+                return i;
+            }
+        }
+        return _numBlocks; //= associativity?
+    }
+
+    uint32_t Cache::getIndexFromAddress(uint32_t address) const
+    {
+        if (_indexLen == 0U)
+            return 0U;                                        //if fully-assoc cache
+        uint32_t getIndex = (uint32_t)pow(2, _indexLen) - 1U; //shift for zero based indexing
+        getIndex = getIndex << _offsetLen;
+        uint32_t index = address & getIndex;
+        index = index >> _offsetLen;
+        return index;
+    }
+    uint32_t Cache::getTagFromAddress(uint32_t address) const
+    {
+        //TODO: implement if nec
+        return 0U;
+
+    }
+    uint32_t Cache::getOffsetFromAddress(uint32_t address) const
+    {
+        //TODO: implement if nec
+        return 0U;
+    }
+
+    void Cache::loadFromMainMemory(uint32_t address)
+    {
+
+        _cycles += (_blockSize / 4) * 100;
+
+        uint32_t index = getIndexFromAddress(address);
+        Set *s = findSet(index);
+        if (s->isEmpty())
+        {
+
+            bool found = false;
+            for (uint32_t i = 0; i < s->getNumBlocks() && !found; i++)
+            {
+                if (!s->getBlockAtIndex(i)->isValid())
+                {
+                    //set block;
+                    s->getBlockAtIndex(i)->setValid(true);
+                    s->getBlockAtIndex(i)->setDirty(false);
+                    s->getBlockAtIndex(i)->setTag(address >> (_indexLen + _offsetLen));
+                    s->getBlockAtIndex(i)->setTime(0);
+                    found = true;
+                }
+            }
+        }
+        else
+        { 
+            
+            //get index to evict - i.e. max time?
+            uint32_t indexToEvict = 0U;
+            uint32_t maxTime = 0U;
+            for (uint32_t j = 0; j < s->getNumBlocks(); j++)
+            {
+                uint32_t blockTime = s->getBlockAtIndex(j)->getTime();
+                if (blockTime >= maxTime)
+                {
+                    maxTime = blockTime;
+                    indexToEvict = j;
+                }
             }
 
-            writeCache(set, block, firstTag, firstDirty, index, tag);
-        }
-        else
-        {
-            writeIfSetNotEmpty(set, block, tag);
-        }
-        set = nullptr;
-        block = nullptr;
-
-        return 0;
-    }
-
-    void writeCache(Set *set, Block *block, std::string &firstTag, bool &firstDirty, std::string index, std::string tag)
-    {
-        if (_allocPolicy == WRITE_ALLOCATE)
-        {
-            set = addSet(index);
-            block = new Block(tag);
-            set.addBlock(*block);
-
-            firstTag = tag;
-            firstDirty = true;
-
-            delete set;
-            delete block;
-
-            _cycles += 100 * _blockSize / 4;
-
-            if (_write == WRITE_THROUGH)
-                _cycles += 101;
-            else
-                _cycles++;
-        }
-        else
-            _cycles += 100;
-    }
-
-    void writeIfSetNotEmpty(Set *set, Block *block, std::string tag)
-    {
-        block = set.findBlock(tag);
-
-        if (block.isEmpty())
-        {
-            writeToCache(set, block, tag);
-        }
-        else
-        {
-            _storeHits++;
-
-            if (_write == WRITE_BACK)
-                block.setDirty();
-            if (_allocPolicy == NO_WRITE_ALLOCATE)
-                _cycles += 100;
-            else if (_write == WRITE_THROUGH)
-                _cycles += 101;
-            else
-                _cycles++;
-
-            if (_evictionType == LRU)
-                set.countTimer(block.getTime());
+            if (_evictionType == CacheSimulator::LRU)
+            {
+                s->evictLRU(indexToEvict);
+            }
+            else if (_evictionType == CacheSimulator::FIFO)
+            {
+                s->evictFIFO(indexToEvict);
+            }
         }
     }
 
-    void writeToCache(Set *set, Block *block, std::string tag)
+    void Cache::printResults()
     {
-        delete block;
+        //prints out results with required formatting
+
+        std::cout << "Total loads: " << _loadMisses + _loadHits << std::endl;
+        std::cout << "Total stores: " << _storeMisses + _storeHits << std::endl;
+        std::cout << "Load hits: " << _loadHits << std::endl;
+        std::cout << "Load misses: " << _loadMisses << std::endl;
+        std::cout << "Store hits: " << _storeHits << std::endl;
+        std::cout << "Store misses: " << _storeMisses << std::endl;
+        std::cout << "Total cycles: " << _cycles << std::endl;
+    }
+
+    Allocation Cache::getAlloc() const
+    {
+        return _alloc;
+    }
+
+    void Cache::setAlloc(Allocation alloc)
+    {
+        _alloc = alloc;
+    }
+
+    Write Cache::getWrite() const
+    {
+        return _write;
+    }
+
+    void Cache::setWrite(Write write)
+    {
+        _write = write;
+    }
+
+    uint32_t Cache::getNumBlocks() const
+    {
+        return _numBlocks;
+    }
+
+    void Cache::incLoadHits()
+    {
+       _loadHits++;
+    }
+
+    void Cache::incLoadMisses()
+    {
+        _loadMisses++;
+    }
+
+    void Cache::incStoreHits()
+    {
+        _storeHits++;
+    }
+
+    void Cache::incStoreMisses()
+    {
         _storeMisses++;
-
-        if (_alloc == WRITE_ALLOCATE)
-        {
-            updateBlock(set, block, tag);
-
-            if (_allocPolicy == WRITE_ALLOCATE)
-            {
-                _cycles += 100 * _blockSize / 4;
-
-                if (_write == WRITE_THROUGH)
-                    _cycles += 101;
-                else
-                    _cycles++;
-            }
-        }
-        else
-            _cycles += 100;
     }
 
-    void updateBlock(Set *set, Block *block, std::string tag)
+    void Cache::incCycles()
     {
-        if (_numBlocks == set.getNumBlocksStored())
-        {
-            block = set.findBlockFromTime(_numBlocks - 1);
-
-            if (_write == WRITE_BACK && block->isDirty())
-                _cycles += 100 * _blockSize / 4;
-
-            set.countTimerAll();
-            block.resetTime();
-            block.updateTag(tag);
-        }
-        else
-        {
-            set.countTimerAll();
-            block = new Block(tag);
-            set.addBlock(*block);
-
-            if (_write == WRITE_BACK)
-                block.setDirty();
-
-            delete block;
-        }
+        _cycles++;
     }
+    void Cache::addToCycles(uint32_t n)
+    {
+        _cycles += n;
+    }
+
 }
