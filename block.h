@@ -1,5 +1,5 @@
-#ifndef __BLOCK__H__
-#define __BLOCK__H__
+#ifndef BLOCK_H
+#define BLOCK_H
 
 #include <iostream>
 
@@ -7,77 +7,38 @@ namespace CacheSimulator {
 class Block
 {
 public:
-    //TODO: create getters & setters for all fields (after we see what we need)
-    Block()
-    { //default - empty and unmodified
-        _isDirty = false;
-        _isEmpty = true;
-        _tag = "";
-        _timeCreated = 0;
-        _lastAccessTime = 0;
-    };
+    Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time);
 
-    Block(std::string tag)
-    { //default - empty and unmodified
-        _tag = "";
-        _isDirty = false;
-        _isEmpty = true;
-        _timeCreated = 0;
-        _lastAccessTime = 0;
-    };
+    bool isDirty() const;
 
-    //public methods:
+    void setDirty(bool isDirty);
 
-    //modify fields
-    void incLastAccessTime();
+    bool isValid() const;
 
+    void setValid(bool isValid);
 
+    uint32_t getTag() const;
 
-    //clear fields
-    void resetTimeCreated();
-    void resetDirty();
+    void setTag(uint32_t tag);
 
+    uint32_t getTime() const;
 
-    //setters
-    void setDirty();
-    void setEmpty();
-    void setTag(std::string newTag);
+    void setTime(uint32_t time);
 
-    //getters
+    void incrementTime();
 
-    int getLastAccessTime()
-    {
-        return _lastAccessTime;
-    }
-    int getTimeCreated()
-    {
-        return _timeCreated;
-    }
-    std::string getTag()
-    {
-        return _tag;
-    }
+    void resetTime();
 
-    bool isDirty()
-    {
-        return _isDirty;
-    }
-
-    bool isEmpty()
-    {
-        return _isEmpty;
-    }
 
 private:
     //fields
     bool _isDirty;
-    bool _isEmpty;
-    std::string _tag;
-    uint32_t _timeCreated;
-    uint32_t _lastAccessTime;
+    bool _isValid; //if empty -> not valid
+    uint32_t _tag; //identifier
+    uint32_t _time; //counter
 };
 
 
 }
 
-#endif //!__BLOCK__H__
+#endif //BLOCK_H
