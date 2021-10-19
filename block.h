@@ -8,6 +8,7 @@ class Block
 {
 public:
     Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time);
+    Block(uint32_t tag);
 
     bool isDirty() const;
 
