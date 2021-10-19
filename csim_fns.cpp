@@ -1,10 +1,25 @@
 #include "csim_fns.h"
 #include "cache.h"
+#include <bitset>
 
 
 namespace CacheSimulator
 {
     //returns 1 if number is a power of 2, 0 if not a power of 2
+
+  std::string getIndex(int idxLen, int tagLen, unsigned int address) {
+        std::bitset<32U> bitAddress(address);
+        std::string index = bitAddress.to_string();
+        return index.substr(tagLen, idxLen);
+    }
+
+    
+    std::string getTag(int tagLen, unsigned int address) {
+        std::bitset<32U> bitTag(address);
+        std::string tag = bitTag.to_string();
+
+        return tag.substr(0, tagLen);
+    }
 
 unsigned int isPowerOfTwo(uint32_t num) {
             return (num && !(num & (num - 1)));

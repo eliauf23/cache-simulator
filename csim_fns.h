@@ -27,20 +27,23 @@
 #include <cstring>
 #include <cstdio>
 
-namespace CacheSimulator {
+namespace CacheSimulator
+{
+
+    std::string getIndex(int idxLen, int tagLen, unsigned int address);
+
+    std::string getTag(int tagLen, unsigned int address);
 
     uint32_t getValidInteger(std::string str);
 
-//returns -1 if cache miss, else returns index in cache
+    //returns -1 if cache miss, else returns index in cache
     unsigned int isPowerOfTwo(uint32_t num);
 
     int printErrorMsg(const std::string &errorMsg);
     //input parsing functions
 
-
     int checkIfArgsValid(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5,
                          std::string s6);
 }
 
-
-#endif  //CSIM_FNS_H
+#endif //CSIM_FNS_H
