@@ -20,7 +20,7 @@
 namespace CacheSimulator
 {
 
-    //add set to cache as long as you don;t exceed maximum numsets
+    //add set to cache as long as you don't exceed maximum numsets
     Set *Cache::addSet()
     {
         Set *set = new Set(_numBlocks);
