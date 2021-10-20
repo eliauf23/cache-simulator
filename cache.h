@@ -55,11 +55,11 @@ namespace CacheSimulator
             _tagLen = 32 - (_offsetLen + _indexLen);
 
             //initialize cache
-//todo: check to make sure this isn't causing segfault
-            for (uint32_t i = 0; i < ns; i++)
-            {
-                Set *set = new Set(_numBlocks);
-            }
+
+            // for (uint32_t i = 0; i < ns; i++)
+            // {
+            //     addSet(i);
+            // }
         };
 
         static uint32_t log_base2(uint32_t num)
@@ -120,7 +120,7 @@ namespace CacheSimulator
         void setWrite(Write write);
 
         //set functions:
-        Set *addSet();
+        Set *addSet(uint32_t index);
         Set *findSet(uint32_t index);
         uint32_t find(uint32_t address);
         uint32_t getIndexFromAddress(uint32_t address) const;
@@ -129,7 +129,7 @@ namespace CacheSimulator
 
         void loadFromMainMemory(uint32_t address);
         void printResults();
-
+        void readFromCache(uint32_t address);
         void handleStoreHit(uint32_t address);
         /* {
                 //Take in all relevant parameters.
@@ -195,7 +195,7 @@ namespace CacheSimulator
         void incStoreMisses();
 
         void incCycles();
-        void addToCycles(uint32_t n);
+        void addToCycles();
 
         uint32_t _loadHits = 0U;
         uint32_t _loadMisses = 0U;

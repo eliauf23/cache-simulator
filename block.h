@@ -30,12 +30,13 @@ public:
 
     void resetTime();
 
-//TODO: make these fields private
-    bool _isValid;
-    uint32_t _tag; //identifier
+
+
 private:
 
     bool _isDirty;
+    bool _isValid;
+    uint32_t _tag; //identifier
     uint32_t _time; //counter
 };
 
