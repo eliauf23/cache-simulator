@@ -11,13 +11,11 @@ namespace CacheSimulator
 
     class Set {
     public:
-        Set() {
-            _numBlocks = 0;
-            _emptyBlocks = 0;
-        };
+        Set() {};
         Set(uint32_t numBlocks);
 
         void addBlock(Block block);
+
         void evictLRU(uint32_t i);
         void evictFIFO(uint32_t i);
 

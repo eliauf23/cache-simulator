@@ -1,17 +1,20 @@
 #include "set.h"
 #include "block.h"
 
+
 namespace CacheSimulator
 {
 
     void Set::addBlock(Block block)
     {
-        _blocks.push_back(block);
         if (block.isValid())
         {
             _emptyBlocks--;
         }
+        _blocks.push_back(block);
+        
     }
+
 
     void Set::evictLRU(uint32_t evictIdx)
     {
@@ -48,11 +51,14 @@ namespace CacheSimulator
     //generates empty set
     Set::Set(uint32_t numBlocks) :  _emptyBlocks(numBlocks) ,_numBlocks(numBlocks){}
 
-    Block *Set::getBlockAtIndex(uint32_t i)
+    Block* Set::getBlockAtIndex(uint32_t i)
     {
-        if (i >= 0 && i <= _numBlocks - 1)
+
+        if (!isEmpty() && i <= _numBlocks - 1)
         {
-            return &_blocks[i];
+        
+            Block *b = &_blocks[i];
+            return b;
         }
         else
         {

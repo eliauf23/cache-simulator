@@ -16,18 +16,22 @@
 #include <cstdlib>
 #include <map>
 #include <unordered_map>
-
+#include <bitset>
+#include <cmath>
 namespace CacheSimulator
 {
 
+<<<<<<< HEAD
     //add set to cache as long as you don't exceed maximum numsets
     Set *Cache::addSet()
+=======
+    //add set to cache as long as you don;t exceed maximum numsets
+    Set *Cache::addSet(uint32_t index)
+>>>>>>> refs/remotes/origin/master
     {
-        Set *set = new Set(_numBlocks);
-        if (_currNumSets + 1 < _numSets)
-        {
-            sets[_currNumSets++] = *set;
-        }
+        _currNumSets++;
+        Set *set = new Set();
+        sets[index] = *set;
         return set;
     }
 
@@ -37,78 +41,10 @@ namespace CacheSimulator
         if (iter != sets.end())
             return &sets[index];
         Set *set = new Set(_numBlocks);
-
         return set;
     }
 
-    void Cache::handleStoreMiss(uint32_t address)
-    {
-        uint32_t index = getIndexFromAddress(address);
-
-        incStoreMisses();
-
-        if (getAlloc() == CacheSimulator::WRITE_ALLOCATE)
-        {
-            loadFromMainMemory(address);
-            incCycles();
-            uint32_t cacheHasAddress = find(address);
-
-            if (getWrite() == CacheSimulator::WRITE_BACK)
-            {
-                //todo: think segfault is happening here
-                if (findSet(index)->getBlockAtIndex(cacheHasAddress) != nullptr)
-                {
-                    findSet(index)->getBlockAtIndex(cacheHasAddress)->setDirty(true);
-                }
-            }
-            else
-            {
-
-                addToCycles(100);
-            }
-        }
-        else
-        {
-
-            addToCycles(100);
-        }
-    }
-
-    void Cache::handleStoreHit(uint32_t address)
-    {
-
-        uint32_t index = getIndexFromAddress(address);
-        //  uint32_t cacheHasAddress = find(address);
-        std::cout << "entered handle store hit" << std::endl;
-
-        incStoreHits();
-
-        if (_write == CacheSimulator::WRITE_BACK)
-        {
-            Set *s = findSet(index);
-            
-            for (uint32_t i = 0; i < _numBlocks; i++)
-            {
-                uint32_t thisTag = getTagFromAddress(address);
-                if (s->getBlockAtIndex(i)->getTag() == thisTag)
-                {
-                    s->getBlockAtIndex(i)->setDirty(true);
-                }
-            }
-            incCycles();
-        }
-        else
-        {
-            addToCycles(100);
-        }
-        if (_evictionType == CacheSimulator::LRU)
-        {
-            Set *s = findSet(index);
-            s->evictLRU(index);
-        }
-    }
-
-    void Cache::handleLoadMiss(uint32_t address)
+ void Cache::handleLoadMiss(uint32_t address)
     {
         incLoadMisses();
         loadFromMainMemory(address);
@@ -124,8 +60,83 @@ namespace CacheSimulator
         {
             Set *s = findSet(index);
             s->evictLRU(index);
+            delete s;
         }
     }
+
+
+    void Cache::handleStoreMiss(uint32_t address)
+    {
+        uint32_t index = getIndexFromAddress(address);
+        Set *s = findSet(index);
+
+        incStoreMisses();
+
+        if (getAlloc() == CacheSimulator::WRITE_ALLOCATE)
+        {
+            loadFromMainMemory(address);
+            incCycles();
+            uint32_t cacheHasAddress = find(address);
+
+            if (getWrite() == CacheSimulator::WRITE_BACK)
+            {
+                //todo: think segfault is happening here
+                if (s->getBlockAtIndex(cacheHasAddress) != nullptr)
+                {
+                    s->getBlockAtIndex(cacheHasAddress)->setDirty(true);
+                }
+            }
+            else
+            {
+
+                addToCycles();
+            }
+        }
+        else
+        {
+
+            addToCycles();
+        }
+        delete s;
+    }
+
+    void Cache::handleStoreHit(uint32_t address)
+    {
+
+        uint32_t index = getIndexFromAddress(address);
+        //  uint32_t cacheHasAddress = find(address);
+        std::cout << "entered handle store hit" << std::endl;
+
+        incStoreHits();
+        Set *s = findSet(index);
+
+        if (_write == CacheSimulator::WRITE_BACK)
+        {
+            
+            for (uint32_t i = 0; i < _numBlocks; i++)
+            {
+                uint32_t thisTag = getTagFromAddress(address);
+                if (s->getBlockAtIndex(i)->getTag() == thisTag)
+                {
+                    s->getBlockAtIndex(i)->setDirty(true);
+                }
+            }
+            incCycles();
+
+        }
+        else
+        {
+            addToCycles();
+        }
+        if (_evictionType == CacheSimulator::LRU)
+        {
+
+            s->evictLRU(index);
+        }    
+        delete s;
+        }
+
+   
 
     uint32_t Cache::find(uint32_t address)
     {
@@ -138,10 +149,13 @@ namespace CacheSimulator
             {
                 if (s->getBlockAtIndex(i)->isValid() && s->getBlockAtIndex(i)->getTag() == tag)
                 {
+                    delete s;
                     return i;
                 }
             }
         }
+
+        delete s;
 
         return _numBlocks; //index will always be less than associativity
     }
@@ -174,17 +188,19 @@ namespace CacheSimulator
     void Cache::loadFromMainMemory(uint32_t address)
     {
 
-        _cycles += (_blockSize / 4) * 100;
-
+        addToCycles();
         uint32_t index = getIndexFromAddress(address);
         Set *s = findSet(index);
-        if (s->isEmpty())
+       //checking if not directly mapped & the set isn't empty 
+        if (!s->isEmpty() && _numBlocks != 1U)
         {
 
             bool found = false;
+            Block *b = s->getBlockAtIndex(i);
             for (uint32_t i = 0; i < s->getNumBlocks() && !found; i++)
             {
-                if (!s->getBlockAtIndex(i)->isValid())
+                //TODO: look at this!
+                if (!b->isValid())
                 {
                     //set block;
                     s->getBlockAtIndex(i)->setValid(true);
@@ -194,6 +210,7 @@ namespace CacheSimulator
                     found = true;
                 }
             }
+            delete b;
         }
         else
         {
@@ -201,9 +218,11 @@ namespace CacheSimulator
             //get index to evict - i.e. max time?
             uint32_t indexToEvict = 0U;
             uint32_t maxTime = 0U;
+            Block *b;
             for (uint32_t j = 0; j < s->getNumBlocks(); j++)
             {
-                uint32_t blockTime = s->getBlockAtIndex(j)->getTime();
+                b = s->getBlockAtIndex(j);
+                uint32_t blockTime = b->getTime();
                 if (blockTime >= maxTime)
                 {
                     maxTime = blockTime;
@@ -219,6 +238,7 @@ namespace CacheSimulator
             {
                 s->evictFIFO(indexToEvict);
             }
+            delete b;
         }
     }
 
@@ -284,9 +304,11 @@ namespace CacheSimulator
     {
         _cycles++;
     }
-    void Cache::addToCycles(uint32_t n)
+
+    //
+    void Cache::addToCycles()
     {
-        _cycles += n;
+        _cycles += (MEM_ACCESS_CYCLES * _blockSize / 4);
     }
 
 }

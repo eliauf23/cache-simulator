@@ -8,6 +8,7 @@ class Block
 {
 public:
     Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time);
+    Block(uint32_t tag);
 
     bool isDirty() const;
 
@@ -29,12 +30,13 @@ public:
 
     void resetTime();
 
-//TODO: make these fields private
-    bool _isValid;
-    uint32_t _tag; //identifier
+
+
 private:
 
     bool _isDirty;
+    bool _isValid;
+    uint32_t _tag; //identifier
     uint32_t _time; //counter
 };
 
