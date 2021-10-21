@@ -22,6 +22,20 @@ namespace CacheSimulator
 {
 
     //add set to cache as long as you don;t exceed maximum numsets
+    // bool Cache::isHit() {
+    //     if(_numBlocks == 1) { //numBlocks per set = 1 -> direct map
+    //         //use address: 
+    //         //get index
+    //         //use index to get the set
+    //         /
+    //                 }            return(getBlockAtIndex(0) == )ock[0] has tag = thisTag
+
+    //         //fully associative: 1 set, 
+    //         //get set[0] & 
+    //     }
+    // }
+
+
     Set *Cache::addSet(uint32_t index)
     {
 
@@ -33,6 +47,9 @@ namespace CacheSimulator
 
     Set *Cache::findSet(uint32_t index)
     {
+
+    std::cout << "entered find set w/ index = " << index << std::endl; 
+    
        Set * set= &_sets.at(index);
         if(set== nullptr) set = new Set(_numBlocks);
         return set;
@@ -159,12 +176,16 @@ namespace CacheSimulator
 
                 if (b->isValid() && b->getTag() == tag)
                 {
-                    delete s;
+                     delete s;
                     delete b;
+
                     return i;
+                } else {
+                    b->setValid(true);
+                    b->setTag(tag);
                 }
             }
-                                delete b;
+                        delete b;
 
         }
 
@@ -176,11 +197,13 @@ namespace CacheSimulator
 
     uint32_t Cache::getIndexFromAddress(uint32_t address) const
     {
-        if (_indexLen == 0U) return 0U;                                        //if fully-assoc cache
-        uint32_t getIndex = (uint32_t) pow(2, _indexLen) - 1U; //shift for zero based indexing
-        getIndex = getIndex << _offsetLen;
-        uint32_t index = address & getIndex;
-        index = index >> _offsetLen;
+        if (_indexLen == 0U) return 0U; //if fully-assoc cache
+       
+        std::bitset<32U> bitIndex(address);
+        std::string idxStr = bitIndex.to_string().substr(_offsetLen, _offsetLen+_indexLen);
+        uint32_t index;
+        std::stringstream tag_stream(idxStr);
+        tag_stream >> std::dec >> index;
         return index;
     }
     uint32_t Cache::getTagFromAddress(uint32_t address) const
