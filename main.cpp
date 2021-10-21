@@ -67,8 +67,8 @@ int main(int argc, char **argv)
 
                 //handleStoreMiss() i.e. set is empty
                 //num blocks = N in N-way associativity
-                if (cache.find(address) == cache.getNumBlocks())
-                {
+            if (cache.find(address) == cache.getNumBlocks())
+             {
                     std::cout << "handle store miss" << std::endl;
 
                     cache.handleStoreMiss(address);

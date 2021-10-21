@@ -3,7 +3,6 @@
 
 #include "set.h"
 #include "block.h"
-#include <unordered_map>
 #include <string>
 #include <cstdint>
 #include <climits>
@@ -56,10 +55,17 @@ namespace CacheSimulator
 
             //initialize cache
 
-            // for (uint32_t i = 0; i < ns; i++)
-            // {
-            //     addSet(i);
-            // }
+            for (uint32_t i = 0; i < ns; i++)
+             {
+                 Set *s = addSet(i);
+                 for (uint32_t j = 0;j < nb; j++) {
+                     Block *b = new Block(UINT32_MAX);
+                    s->addBlock(*b);
+                    delete b;
+                 }
+                 delete s;
+                 
+             }
         };
 
         static uint32_t log_base2(uint32_t num)
@@ -205,7 +211,7 @@ namespace CacheSimulator
 
     public:
         uint32_t getNumBlocks() const;
-        std::unordered_map<uint32_t, Set> sets;
+        std::vector<Set> _sets;
 
     private:
         //base fields that will be set from constructor

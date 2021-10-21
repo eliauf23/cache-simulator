@@ -15,7 +15,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <map>
-#include <unordered_map>
+
 #include <bitset>
 #include <cmath>
 namespace CacheSimulator
@@ -24,18 +24,17 @@ namespace CacheSimulator
     //add set to cache as long as you don;t exceed maximum numsets
     Set *Cache::addSet(uint32_t index)
     {
+
+        Set *set = new Set(index);
+        _sets.push_back(*set);
         _currNumSets++;
-        Set *set = new Set();
-        sets[index] = *set;
         return set;
     }
 
     Set *Cache::findSet(uint32_t index)
     {
-        std::unordered_map<uint32_t, Set>::iterator iter = sets.find(index);
-        if (iter != sets.end())
-            return &sets[index];
-        Set *set = new Set(_numBlocks);
+       Set * set= &_sets.at(index);
+        if(set== nullptr) set = new Set(_numBlocks);
         return set;
     }
 
@@ -133,22 +132,31 @@ namespace CacheSimulator
 
    
 
+//check for hit
     uint32_t Cache::find(uint32_t address)
     {
         uint32_t index = getIndexFromAddress(address);
         uint32_t tag = getTagFromAddress(address);
         Set *s = findSet(index);
-        if (s != nullptr)
+        if (s->getNumBlocks() != _numBlocks)
         {
-            for (uint32_t i = 0U; i < _numBlocks; i++)
+            Block *b;
+
+            for (uint32_t i = 0; i < _numBlocks; i++)
             {
-                if (s->getBlockAtIndex(i)->isValid() && s->getBlockAtIndex(i)->getTag() == tag)
+                b = s->getBlockAtIndex(i);
+
+                if (b->isValid() && b->getTag() == tag)
                 {
                     delete s;
+                    delete b;
                     return i;
                 }
             }
+                                delete b;
+
         }
+
 
         delete s;
 
@@ -157,9 +165,8 @@ namespace CacheSimulator
 
     uint32_t Cache::getIndexFromAddress(uint32_t address) const
     {
-        if (_indexLen == 0U)
-            return 0U;                                        //if fully-assoc cache
-        uint32_t getIndex = (uint32_t)pow(2, _indexLen) - 1U; //shift for zero based indexing
+        if (_indexLen == 0U) return 0U;                                        //if fully-assoc cache
+        uint32_t getIndex = (uint32_t) pow(2, _indexLen) - 1U; //shift for zero based indexing
         getIndex = getIndex << _offsetLen;
         uint32_t index = address & getIndex;
         index = index >> _offsetLen;
@@ -190,10 +197,12 @@ namespace CacheSimulator
         if (!s->isEmpty() && _numBlocks != 1U)
         {
 
+            Block *b;
             bool found = false;
-            Block *b = s->getBlockAtIndex(i);
             for (uint32_t i = 0; i < s->getNumBlocks() && !found; i++)
             {
+                            b = s->getBlockAtIndex(i);
+
                 //TODO: look at this!
                 if (!b->isValid())
                 {
@@ -205,7 +214,6 @@ namespace CacheSimulator
                     found = true;
                 }
             }
-            delete b;
         }
         else
         {
