@@ -14,7 +14,7 @@ namespace CacheSimulator
         Set() {};
         Set(uint32_t numBlocks);
 
-        void addBlock(Block block);
+        void addBlock(Block *b);
 
         void evictLRU(uint32_t i);
         void evictFIFO(uint32_t i);
@@ -30,7 +30,7 @@ namespace CacheSimulator
         void setEmptyBlocks(uint32_t emptyBlocks);
 
     private:
-        std::vector <Block> _blocks;
+        std::vector <Block *> _blocks;
         uint32_t _emptyBlocks;
         uint32_t _numBlocks;
 

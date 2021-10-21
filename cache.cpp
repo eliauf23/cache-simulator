@@ -40,8 +40,9 @@ namespace CacheSimulator
     {
 
         Set *set = new Set(index);
-        _sets.push_back(*set);
+        _sets.push_back(set);
         _currNumSets++;
+
         return set;
     }
 
@@ -49,8 +50,9 @@ namespace CacheSimulator
     {
 
     std::cout << "entered find set w/ index = " << index << std::endl; 
-    
-       Set * set= &_sets.at(index);
+
+       Set * set= _sets[index];
+
         if(set== nullptr) set = new Set(_numBlocks);
         return set;
     }
@@ -170,24 +172,20 @@ namespace CacheSimulator
         Set *s = findSet(index);
         if (s->getNumBlocks() != _numBlocks)
         {
-            Block *b;
+
 
             for (uint32_t i = 0; i < _numBlocks; i++)
             {
-                b = s->getBlockAtIndex(i);
 
-                if (b->isValid() && b->getTag() == tag)
+                if (s->getBlockAtIndex(i)->isValid() && s->getBlockAtIndex(i)->getTag() == tag)
                 {
-                     delete s;
-                    delete b;
-
+                    delete s;
                     return i;
                 } else {
-                    b->setValid(true);
-                    b->setTag(tag);
+                    s->getBlockAtIndex(i)->setValid(true);
+                    s->getBlockAtIndex(i)->setTag(tag);
                 }
             }
-                        delete b;
 
         }
 

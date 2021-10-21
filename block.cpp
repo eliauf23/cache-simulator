@@ -4,7 +4,7 @@ namespace CacheSimulator {
 
     Block::Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time) : _isDirty(isDirty), _isValid(isValid),
                                                                             _tag(tag), _time(time) {}
-    Block::Block(uint32_t tag) : _isDirty(false), _isValid(true), _tag(tag), _time(0) {}
+    Block::Block(uint32_t tag) : _isDirty(false), _isValid(false), _tag(tag), _time(0) {}
     
     bool Block::isDirty() const {
         return _isDirty;

@@ -59,9 +59,11 @@ namespace CacheSimulator
              {
                  Set *s = addSet(i);
                  for (uint32_t j = 0;j < nb; j++) {
-                     Block *b = new Block(UINT32_MAX);
-                    s->addBlock(*b);
+
+                    Block *b = new Block(false, false, 0, 0);
+                    s->addBlock(b);
                     delete b;
+
                  }
                  delete s;
                  
@@ -213,7 +215,7 @@ namespace CacheSimulator
 
     public:
         uint32_t getNumBlocks() const;
-        std::vector<Set> _sets;
+        std::vector<Set *> _sets;
 
     private:
         //base fields that will be set from constructor
