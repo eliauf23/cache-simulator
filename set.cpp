@@ -18,6 +18,7 @@ namespace CacheSimulator
 
     void Set::evictLRU(uint32_t evictIdx)
     {
+
         uint32_t lastAccessTime = getBlockAtIndex(evictIdx)->getTime();
         if (lastAccessTime == 0)
         {
@@ -39,7 +40,7 @@ namespace CacheSimulator
         getBlockAtIndex(evictIdx)->setTime(0);
     }
 
-
+    
     void Set::evictFIFO(uint32_t evictIdx)
     {
         for (uint32_t i = 0; i < _numBlocks; i++)

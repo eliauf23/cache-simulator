@@ -93,13 +93,15 @@ namespace CacheSimulator
                     s->getBlockAtIndex(cacheHasAddress)->setDirty(true);
                 }
             }
-            else
+            else //write-through, also writes to memory
             {
+                
                 addToCycles();
             }
         }
-        else
+        else    //no write allocate, does not modify cache
         {
+            //only calls from memory (+100*m4)
             addToCycles();
         }
         delete s;
