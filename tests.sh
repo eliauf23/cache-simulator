@@ -4,7 +4,7 @@ make clean
 
 make
 
-./csim 256 4 16 write-allocate write-back lru < example_traces/write01.trace
+./csim 2 4 4 write-allocate write-back lru < example_traces/write01.trace
 
 #should enter tests for other configurations - direct, N-way assoc, fully assoc
 

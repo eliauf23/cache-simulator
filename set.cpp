@@ -37,7 +37,7 @@ namespace CacheSimulator
                 }
             }
         }
-        getBlockAtIndex(evictIdx)->setTime(0);
+        getBlockAtIndex(evictIdx)->resetTime();
     }
 
     
@@ -47,7 +47,7 @@ namespace CacheSimulator
         {
             getBlockAtIndex(i)->incrementTime();
         }
-        _blocks[evictIdx].resetTime();
+        getBlockAtIndex(evictIdx)->resetTime();
     }
 
     //generates empty set
