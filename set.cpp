@@ -5,14 +5,10 @@
 namespace CacheSimulator
 {
 
-    void Set::addBlock(Block block)
+    void Set::addBlock(Block * b)
     {
-        if (block.isValid())
-        {
-            _emptyBlocks--;
-        }
-        _blocks.push_back(block);
-        
+        _blocks.push_back(b);
+         
     }
 
 
@@ -50,16 +46,15 @@ namespace CacheSimulator
     }
 
     //generates empty set
-    Set::Set(uint32_t numBlocks) :  _emptyBlocks(numBlocks) ,_numBlocks(numBlocks){}
+    Set::Set(uint32_t numBlocks) :  _emptyBlocks(numBlocks) ,_numBlocks(numBlocks) {}
 
     Block* Set::getBlockAtIndex(uint32_t i)
     {
 
-        if (!isEmpty() && i <= _numBlocks - 1)
+        if (!_blocks.empty() && i < _blocks.size())
         {
         
-            Block *b = &_blocks[i];
-            return b;
+            return _blocks[i];
         }
         else
         {
