@@ -82,6 +82,8 @@ namespace CacheSimulator
         }
 
         //TODO:implement parameterized constructor
+
+        //getter for offset (calculated)
         uint32_t getOffsetLen() const
         {
             return _offsetLen;
