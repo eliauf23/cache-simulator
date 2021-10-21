@@ -47,15 +47,23 @@ namespace CacheSimulator
 
     void Cache::handleLoadHit(uint32_t address)
     {
+        incLoadHits(); //load hit determined by main
+        incCycles(); //+1 cycle for a cache load
+        if (_blockSize == 1) {return;}    //If direct mapped (aka block size == 1), then update counters and exit
         uint32_t index = getIndexFromAddress(address);
-        incLoadHits();
-        incCycles();
-        if (_evictionType == CacheSimulator::LRU)
+        Set *s = findSet(index);
+        
+
+        //If either set or full associative, use LRU or FIFO to update cache 
+        if (_evictionType == CacheSimulator::LRU && _blockSize != 1) //TODO: Check that second arg is needed
         {
-            Set *s = findSet(index);
-            s->evictLRU(index);
-            delete s;
+            s->evictLRU(index); //Here evict isn't actually evicting, its updating LRU counter
         }
+        else if (_evictionType == CacheSimulator::FIFO && _blockSize != 1) 
+        {
+            s->evictFIFO(index); //evict isn't actually evicting, its updating FIFO counter
+        }
+        delete s;
     }
 
 
@@ -68,12 +76,16 @@ namespace CacheSimulator
 
         if (getAlloc() == CacheSimulator::WRITE_ALLOCATE)
         {
+            //for write-allocate we bring the relevant memory block into the cache before the store proceeds
             loadFromMainMemory(address);
-            incCycles();
+            addToCycles(); //bc we load from memory we need to add 100* # of 4 bytes to cycle counter
+            incCycles(); // add one cycle for store
             uint32_t cacheHasAddress = find(address);
 
             if (getWrite() == CacheSimulator::WRITE_BACK)
             {
+                //store writes to the cache only and marks the block dirty
+                //if the block is evicted later, it has to be written back to memory before being replaced
                 //todo: think segfault is happening here
                 if (s->getBlockAtIndex(cacheHasAddress) != nullptr)
                 {
@@ -82,13 +94,11 @@ namespace CacheSimulator
             }
             else
             {
-
                 addToCycles();
             }
         }
         else
         {
-
             addToCycles();
         }
         delete s;
@@ -134,6 +144,7 @@ namespace CacheSimulator
 
 //check for hit
     uint32_t Cache::find(uint32_t address)
+    //returns block # of address in the set 
     {
         uint32_t index = getIndexFromAddress(address);
         uint32_t tag = getTagFromAddress(address);
@@ -313,5 +324,6 @@ namespace CacheSimulator
     {
         _cycles += (MEM_ACCESS_CYCLES * _blockSize / 4);
     }
+
 
 }
