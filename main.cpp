@@ -3,36 +3,37 @@
 #include "block.h"
 #include "set.h"
 #include <string>
-#include <bitset>
-#include <sstream>
-#include <limits>
-#include <cstdio>
 #include <cstdint>
 #include <iostream>
 
 #define NUM_ARGS 7
 
+using std::cin;
+using std::cout;
+using std::endl;
+using std::getline;
+using std::stoul;
+using std::string;
+
 int main(int argc, char **argv)
 {
+    string s1 = string(argv[1]);
+    string s2 = string(argv[2]);
+    string s3 = string(argv[3]);
+    string s4 = string(argv[4]);
+    string s5 = string(argv[5]);
+    string s6 = string(argv[6]);
 
-    //parse in command line args
-    std::string s1 = std::string(argv[1]);
-    std::string s2 = std::string(argv[2]);
-    std::string s3 = std::string(argv[3]);
-    std::string s4 = std::string(argv[4]);
-    std::string s5 = std::string(argv[5]);
-    std::string s6 = std::string(argv[6]);
-
-    //ensures no illegal combinations of args & all valid 
+    // ensures no illegal combinations of args & all valid
     bool argsValid = CacheSimulator::checkIfArgsValid(s1, s2, s3, s4, s5, s6) == 0;
 
     if (argc == NUM_ARGS && argsValid)
     {
-
+        // parse all command line args
         uint32_t numSets = CacheSimulator::getValidInteger(s1);
-        uint32_t numBlocks = CacheSimulator::getValidInteger(s2);
+        uint32_t blocksPerSet = CacheSimulator::getValidInteger(s2);
         uint32_t blockSize = CacheSimulator::getValidInteger(s3);
-        //enums from cache
+        // enums from cache.cpp
         CacheSimulator::Allocation alloc;
         CacheSimulator::Write write;
         CacheSimulator::Eviction evict;
@@ -52,66 +53,55 @@ int main(int argc, char **argv)
         else
             evict = CacheSimulator::LRU;
 
-        //initialize cache
-        CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, numBlocks, blockSize, alloc, write, evict);
+        // initialize cache
+        CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);
 
+        string operation = ""; // load or store
+        uint32_t address;      // hex address
+        string line;
 
-
-        std::cout << "index bits: " << cache.getIndexLen() << "tag bits: " << cache.getTagLen() << "offset bits: " << cache.getOffsetLen() << std::endl;
-        
-        std::string operation; //load or store
-        uint32_t address;      //hex address
-        uint32_t unusedNum;    //thing @ end of the line
-        std::string line;
-        
-        //read in file
-        while (std::getline(std::cin, line))
+        // read in file
+        while (getline(cin, line))
         {
-            std::istringstream string_stream(line);
-            string_stream >> operation >> std::hex >> address >> std::dec >> unusedNum;
+            operation = line.substr(0, 1);
+            address = stoul(line.substr(4, 12), 0, 16);
 
-            if (operation == "s") //Store
+            uint32_t index = cache.getIndexFromAddress(address);
+            uint32_t tag = cache.getTagFromAddress(address);
+            bool cacheHit = cache.checkIfCacheHit(index, tag);
+
+            //STORE HIT
+            if (operation == "s" && cacheHit)
             {
-                std::cout << "store" << std::endl;
-
-                //handleStoreMiss() i.e. block is empty or has another address stored 
-                //num blocks = N in N-way associativity
-                if (cache.find(address) == cache.getNumBlocks())
-                {
-                    //cache miss, find(address) returns out of bounds block index
-                    std::cout << "handle store miss" << std::endl;
-
-                    cache.handleStoreMiss(address);
-                    
-                }
-                else
-                { // cache hit, find(address) is within bounds 
-                    std::cout << "handle store hit" << std::endl;
-
-                    cache.handleStoreHit(address);
-                }
+                cache.incStoreHits();
+                cache.handleStoreHit(index, tag);
             }
-            else if (operation == "l") //load
+            //STORE MISS
+            else if (operation == "s" && !cacheHit)
             {
-                if (cache.find(address) == cache.getNumBlocks())
-                {
-                    //cache miss, find(address) returns out of bounds block index
-                    cache.handleLoadMiss(address);
+                cache.incStoreMisses();
+                cache.handleStoreMiss(index, tag);
+            }
 
-                    std::cout << "handle load miss" << std::endl;
-                }
-                else
-                {
-                    //handle load hit
-                    cache.handleLoadHit(address);
+            //LOAD HIT
+            else if (operation == "l" && cacheHit)
+            {
+                cache.incLoadHits();
+                cache.handleLoadHit(index, tag);
+            }
 
-                    std::cout << "handle load hit" << std::endl;
-                }
+            //LOAD MISS
+            else if (operation == "l" && !cacheHit)
+            {
+                
+                cache.incLoadMisses();
+                cache.handleLoadMiss(index, tag);
             }
             else
             {
-                //error!
+                // error!
                 return CacheSimulator::printErrorMsg("Invalid operation");
+                exit(1);
             }
         }
         cache.printResults();

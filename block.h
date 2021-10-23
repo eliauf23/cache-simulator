@@ -7,6 +7,7 @@ namespace CacheSimulator {
 class Block
 {
 public:
+    Block();
     Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time);
     Block(uint32_t tag);
 
@@ -36,7 +37,7 @@ private:
 
     bool _isDirty;
     bool _isValid;
-    uint32_t _tag; //identifier
+    uint32_t _tag; //unique identifier
     uint32_t _time; //counter
 };
 

@@ -1,6 +1,12 @@
 #include "block.h"
 
 namespace CacheSimulator {
+    Block::Block() {
+        _isDirty = false;
+        _isValid = false;
+        _tag = 0;
+        _time = 0;
+    }
 
     Block::Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time) : _isDirty(isDirty), _isValid(isValid),
                                                                             _tag(tag), _time(time) {}
@@ -44,6 +50,6 @@ namespace CacheSimulator {
     }
 
     void Block::resetTime() {
-        _time = 0;
+        _time = 1;
     }
 }
