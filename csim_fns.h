@@ -4,24 +4,13 @@
 #define CSIM_FNS_H
 
 #define MIN_BLOCK_SIZE 4U
-#define ADDRESS_LEN 32U
 
 
-#include "csim_fns.h"
 #include <iostream>
 #include <string>
-#include <bitset>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
 
 namespace CacheSimulator
 {
-
-    std::string getIndex(int idxLen, int tagLen, unsigned int address);
-
-    std::string getTag(int tagLen, unsigned int address);
 
     uint32_t getValidInteger(std::string str);
 

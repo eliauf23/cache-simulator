@@ -51,10 +51,13 @@ namespace CacheSimulator
 
     std::cout << "entered find set w/ index = " << index << std::endl; 
 
-       Set * set= _sets[index];
+if(index >= _sets.size()) {
+    return new Set(_numBlocks);
 
-        if(set== nullptr) set = new Set(_numBlocks);
-        return set;
+}
+
+       return _sets.at(index);
+
     }
 
  void Cache::handleLoadMiss(uint32_t address)
@@ -68,7 +71,7 @@ namespace CacheSimulator
     {
         incLoadHits(); //load hit determined by main
         incCycles(); //+1 cycle for a cache load
-        if (_blockSize == 1) {return;}    //If direct mapped (aka block size == 1), then update counters and exit
+        if (_blockSize == 1U) {return;}    //If direct mapped (aka block size == 1), then update counters and exit
         uint32_t index = getIndexFromAddress(address);
         Set *s = findSet(index);
         
@@ -78,11 +81,10 @@ namespace CacheSimulator
         {
             s->evictLRU(index); //Here evict isn't actually evicting, its updating LRU counter
         }
-        else if (_evictionType == CacheSimulator::FIFO && _blockSize != 1) 
+        else if (_evictionType == CacheSimulator::FIFO && _blockSize != 1U) 
         {
             s->evictFIFO(index); //evict isn't actually evicting, its updating FIFO counter
         }
-        delete s;
     }
 
 
@@ -120,7 +122,7 @@ namespace CacheSimulator
         {
             addToCycles();
         }
-        delete s;
+
     }
 
     void Cache::handleStoreHit(uint32_t address)
@@ -156,7 +158,7 @@ namespace CacheSimulator
 
             s->evictLRU(index);
         }    
-        delete s;
+
         }
 
    
@@ -177,7 +179,7 @@ namespace CacheSimulator
 
                 if (s->getBlockAtIndex(i)->isValid() && s->getBlockAtIndex(i)->getTag() == tag)
                 {
-                    delete s;
+
                     return i;
                 } else {
                     s->getBlockAtIndex(i)->setValid(true);
@@ -187,18 +189,23 @@ namespace CacheSimulator
 
         }
 
-
-        delete s;
-
         return _numBlocks; //index will always be less than associativity
     }
 
     uint32_t Cache::getIndexFromAddress(uint32_t address) const
     {
         if (_indexLen == 0U) return 0U; //if fully-assoc cache
-       
         std::bitset<32U> bitIndex(address);
-        std::string idxStr = bitIndex.to_string().substr(_offsetLen, _offsetLen+_indexLen);
+        std::string idxStr = bitIndex.to_string().substr(_offsetLen,  _offsetLen +_indexLen);
+
+
+
+// std::cout << bitIndex.to_string() << std::endl;
+// std::cout << "offset: " << bitIndex.to_string().substr(0, _offsetLen) << std::endl;
+// std::cout << "index: " << bitIndex.to_string().substr(_offsetLen, _offsetLen+_indexLen) << std::endl;
+// std::cout << "tag: " << bitIndex.to_string().substr(_offsetLen+_indexLen, 31) << std::endl;
+
+
         uint32_t index;
         std::stringstream tag_stream(idxStr);
         tag_stream >> std::dec >> index;
@@ -207,7 +214,7 @@ namespace CacheSimulator
     uint32_t Cache::getTagFromAddress(uint32_t address) const
     {
         std::bitset<32U> bitTag(address);
-        std::string tagStr = bitTag.to_string().substr(0, _tagLen);
+        std::string tagStr = bitTag.to_string().substr(_offsetLen+_indexLen, 32);
         uint32_t tag;
         std::stringstream tag_stream(tagStr);
         tag_stream >> std::dec >> tag;
@@ -229,11 +236,11 @@ namespace CacheSimulator
         if (!s->isEmpty() && _numBlocks != 1U)
         {
 
-            Block *b;
+            Block *b = nullptr;
             bool found = false;
             for (uint32_t i = 0; i < s->getNumBlocks() && !found; i++)
             {
-                            b = s->getBlockAtIndex(i);
+                b = s->getBlockAtIndex(i);
 
                 //TODO: look at this!
                 if (!b->isValid())
@@ -273,8 +280,8 @@ namespace CacheSimulator
             {
                 s->evictFIFO(indexToEvict);
             }
-            delete b;
-        }
+
+       }
     }
 
     void Cache::printResults()

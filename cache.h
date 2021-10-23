@@ -62,10 +62,8 @@ namespace CacheSimulator
 
                     Block *b = new Block(false, false, 0, 0);
                     s->addBlock(b);
-                    delete b;
 
                  }
-                 delete s;
                  
              }
         };

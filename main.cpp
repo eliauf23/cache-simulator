@@ -55,6 +55,10 @@ int main(int argc, char **argv)
         //initialize cache
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, numBlocks, blockSize, alloc, write, evict);
 
+
+
+        std::cout << "index bits: " << cache.getIndexLen() << "tag bits: " << cache.getTagLen() << "offset bits: " << cache.getOffsetLen() << std::endl;
+        
         std::string operation; //load or store
         uint32_t address;      //hex address
         uint32_t unusedNum;    //thing @ end of the line
