@@ -6,7 +6,8 @@
 #include <string>
 #include <cstdint>
 #include <climits>
-
+using std::cout;
+using std::endl;
 namespace CacheSimulator
 {
 
@@ -34,6 +35,7 @@ namespace CacheSimulator
     public:
         Cache() = default;
 
+        ~Cache() {}
         Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e)
         {
             _numSets = ns;
@@ -54,18 +56,10 @@ namespace CacheSimulator
             _tagLen = 32 - (_offsetLen + _indexLen);
 
             //initialize cache
-
-            for (uint32_t i = 0; i < ns; i++)
-             {
-                 Set *s = addSet(i);
-                 for (uint32_t j = 0;j < nb; j++) {
-
-                    Block *b = new Block(false, false, 0, 0);
-                    s->addBlock(b);
-
-                 }
-                 
-             }
+               for(uint32_t i = 0; i < ns; i++) {
+                _sets.push_back(Set(_numBlocks, i));
+                _currNumSets++;
+                }
         };
 
         static uint32_t log_base2(uint32_t num)
@@ -130,15 +124,22 @@ namespace CacheSimulator
         //set functions:
         Set *addSet(uint32_t index);
         Set *findSet(uint32_t index);
-        uint32_t find(uint32_t address);
+        void updateLRU(uint32_t index, uint32_t tag, uint32_t maxTime);
+        int getIndexToEvict(uint32_t index, uint32_t tag);
+        void writeBack(uint32_t index, uint32_t tag);
+        void writeAllocate(uint32_t index, uint32_t tag);
+        void writeThrough(uint32_t index, uint32_t tag);
+
+
         uint32_t getIndexFromAddress(uint32_t address) const;
         uint32_t getTagFromAddress(uint32_t address) const;
-        uint32_t getOffsetFromAddress(uint32_t address) const;
 
+bool checkIfCacheHit(uint32_t index, uint32_t tag);
+    int replaceBlock(uint32_t index, uint32_t tag);
         void loadFromMainMemory(uint32_t address);
         void printResults();
         void readFromCache(uint32_t address);
-        void handleStoreHit(uint32_t address);
+        void handleStoreHit(uint32_t index, uint32_t tag);
         /* {
                 //Take in all relevant parameters.
                 //Follow logic to update chache/not update
@@ -156,7 +157,7 @@ namespace CacheSimulator
                 }
             } */
 
-        void handleStoreMiss(uint32_t address);
+        void handleStoreMiss(uint32_t index, uint32_t tag);
 
         /*   {
                 if (writeBack)
@@ -176,7 +177,7 @@ namespace CacheSimulator
                     //write to cache & write to memory!
                 } */
 
-        void handleLoadMiss(uint32_t address);
+        void handleLoadMiss(uint32_t index, uint32_t tag);
         /* {
                     //find corresponding cache block
                     //is there data there?
@@ -190,7 +191,7 @@ namespace CacheSimulator
 
         //functions to initialize cache
 
-        void handleLoadHit(uint32_t address);
+        void handleLoadHit(uint32_t index, uint32_t tag);
 
         //results!
 
@@ -205,6 +206,8 @@ namespace CacheSimulator
         void incCycles();
         void addToCycles();
 
+        uint32_t _loads = 0U;
+        uint32_t _stores = 0U;
         uint32_t _loadHits = 0U;
         uint32_t _loadMisses = 0U;
         uint32_t _storeHits = 0U;
@@ -213,7 +216,7 @@ namespace CacheSimulator
 
     public:
         uint32_t getNumBlocks() const;
-        std::vector<Set *> _sets;
+        std::vector<Set> _sets;
 
     private:
         //base fields that will be set from constructor
