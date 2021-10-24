@@ -20,12 +20,11 @@ using std::string;
 int main(int argc, char *argv[])
 {
 
-    // ensures no illegal combinations of args & all valid
-
     if (argc != NUM_ARGS)
     {
         return printErrorMsg("incorrect num args");
     }
+    // ensures no illegal combinations of args & all valid before parsing
     else if (checkIfArgsValid(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]) != 0)
     {
         return printErrorMsg("Invalid args. Try again.");
@@ -61,7 +60,7 @@ int main(int argc, char *argv[])
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);
 
         string operation(""); // load or store
-        uint32_t address;      // hex address
+        uint32_t address;     // hex address
         string line("");
 
         // read in file
@@ -75,9 +74,7 @@ int main(int argc, char *argv[])
 
             uint32_t index = cache.getIndexFromAddress(address);
             uint32_t tag = cache.getTagFromAddress(address);
-
             uint32_t blockIdx = cache.getBlockIndex(index, tag);
-            // get address of block added
 
             // STORE!
             if (operation == "s")
@@ -85,24 +82,24 @@ int main(int argc, char *argv[])
                 if (blockIdx != cache.getNumBlocks())
                 { // cache miss
                     if (cache.isWriteAllocate())
-                    {                                                        // load value into cache and change it there, implies writeBack
-                        cache.loadToCache(index, tag);                       // loading value from main, cache.loadToCache sets lru and fifo counters
-                        cache._cycles++;                                     // writing to value in cache
-                        uint32_t blockIdx = cache.getBlockIndex(index, tag); // get address of block added
+                    {                                     
+                        cache.loadToCache(index, tag);
+                        cache.cacheToCpuOperation();
+                        uint32_t blockIdx = cache.getBlockIndex(index, tag);
                         if (cache.isWriteBack())
                         {
                             cache.sets[index]._blocks[blockIdx].setDirty(true);
                         }
                         else
                         {
-                            cache._cycles += 100; // write to main because store miss and write allocate
+                            cache._cycles += 100; // write alloc & write thru so need to write thru
                         }
                     }
                     else
-                    { // no-write-allocate - write value straight to main memory (skip over cache)
+                    { // no-write-allocate: write directly to main memory w/o writing to cache
                         cache._cycles += 100;
                     }
-                    cache._storeMisses++;
+                    cache.incStoreMisses();
                 }
 
                 else
@@ -110,7 +107,7 @@ int main(int argc, char *argv[])
                     if (cache.isWriteBack())
                     { // change value in cache, make sure to mark dirty bit
                         cache.sets[index]._blocks[blockIdx].setDirty(true);
-                        cache._cycles++;
+                        cache.cacheToCpuOperation();
                     }
                     else
                     {                         // write-through - change value in cache and in main memory
@@ -119,7 +116,7 @@ int main(int argc, char *argv[])
                     cache._storeHits++;
                     if (cache.isLRU())
                     {
-                        CacheSimulator::Set * s = cache.findSet(index);
+                        CacheSimulator::Set *s = cache.findSet(index);
                         s->incrementLRU(blockIdx);
                         delete s;
                     }
@@ -137,26 +134,27 @@ int main(int argc, char *argv[])
                 if (blockIdx == cache.getNumBlocks())
                 { // cache miss
                     // need to load value into cache
-                    cache._loadMisses++;
+                    cache.incLoadMisses();
 
-                    cache.loadToCache(index, tag); // cache.loadToCache updates fifo and lru counters
-                    cache._cycles++;
+                    //updates FIFO/LRU times
+                    cache.loadToCache(index, tag);
+                    
+                    cache.cacheToCpuOperation();
                 }
                 else
                 {
 
-                    cache._cycles++;
-                    cache._loadHits++;
+                    cache.cacheToCpuOperation();
+                    cache.incLoadHits();
                     if (cache.isLRU())
                     {
-                        CacheSimulator::Set * s = cache.findSet(index);
+                        CacheSimulator::Set *s = cache.findSet(index);
                         s->incrementLRU(blockIdx);
-                        delete s;
                     }
                 }
 
                 // increment loads regardless
-                cache._loads++;
+                cache.incLoads();
             }
 
             // ERROR!
@@ -167,7 +165,6 @@ int main(int argc, char *argv[])
             }
         }
         cache.printResults();
-
 
         return 0;
     }
