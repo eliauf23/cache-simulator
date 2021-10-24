@@ -115,7 +115,7 @@
             return 1;;
         }
 
-        if ((strcmp(s4, "no-write-allocate") == 0)  && (strcmp(s5, "write-back") != 0))
+        if ((strcmp(s4, "no-write-allocate") == 0)  && (strcmp(s5, "write-back") == 0))
         {
             printErrorMsg("Contradictory arguments");
             return 1;;

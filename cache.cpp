@@ -38,13 +38,12 @@ namespace CacheSimulator
         for (auto &block : set->_blocks)
         {
             if (block.isValid() && block.getTag() == tag)
-            { // check if block has data and if tags are equal for matching
-                delete set;
+            { 
                 return i;
             }
             i++;
         }
-        delete set;
+
         return _numBlocks; // 1 beyond max index in block vector
     }
 
@@ -64,7 +63,7 @@ namespace CacheSimulator
                     block.setTag(tag);
                     block.setDirty(false);
 
-                    delete s;
+
                     return;
                 }
             }
@@ -86,12 +85,12 @@ namespace CacheSimulator
             {
                 if (s->_blocks[idxToEvict].isDirty())
                 {
-                    memoryToCacheOperation(); // write modified block back to mem
+                    // write modified block back to mem
+                    memoryToCacheOperation(); 
                 }
             }
         }
-        // update block
-
+        // update block and "evict old block"
         if (idxToEvict < _numBlocks)
         {
             s->_blocks[idxToEvict].setTag(tag);
@@ -102,7 +101,7 @@ namespace CacheSimulator
         // increment num cycles
 
         memoryToCacheOperation();
-        delete s;
+
     }
 
     // end of new functions!
@@ -131,7 +130,7 @@ namespace CacheSimulator
     bool Cache::checkIfCacheHit(uint32_t index, uint32_t tag)
     {
 
-        if (findSet(index)->isEmpty())
+        if (findSet(index)->isEmpty() )
         {
             return false;
         }
@@ -380,7 +379,7 @@ namespace CacheSimulator
         // prints out results with required formatting
 
         cout << "Total loads: " << _loads << endl;
-        cout << "Total stores: " << _storeMisses + _storeHits << endl;
+        cout << "Total stores: " << _stores << endl;
         cout << "Load hits: " << _loadHits << endl;
         cout << "Load misses: " << _loadMisses << endl;
         cout << "Store hits: " << _storeHits << endl;
