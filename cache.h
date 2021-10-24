@@ -6,38 +6,35 @@
 #include <string>
 #include <cstdint>
 #include <climits>
+#include <unordered_map>
+
 using std::cout;
 using std::endl;
-namespace CacheSimulator
-{
+namespace CacheSimulator {
 
-    enum Allocation
-    {
+    enum Allocation {
         WRITE_ALLOCATE = 0,
         NO_WRITE_ALLOCATE = 1
     };
 
-    enum Write
-    {
+    enum Write {
         WRITE_THROUGH = 0,
         WRITE_BACK = 1
     };
 
-    enum Eviction
-    {
+    enum Eviction {
         LRU = 0,
         FIFO = 1
     };
 
-    class Cache
-    {
+    class Cache {
 
     public:
         Cache() = default;
 
         ~Cache() {}
-        Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e)
-        {
+
+        Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e) {
             _numSets = ns;
             _numBlocks = nb;
             _blockSize = b_size;
@@ -56,24 +53,26 @@ namespace CacheSimulator
             _tagLen = 32 - (_offsetLen + _indexLen);
 
             //initialize cache
-               for(uint32_t i = 0; i < ns; i++) {
-                _sets.push_back(Set(_numBlocks, i));
-                _currNumSets++;
-                }
+            for (uint32_t i = 0; i < ns; i++) {
+                addSet(i);
+            }
         };
 
-        static uint32_t log_base2(uint32_t num)
-        {
+        bool isLRU() const;
+        bool isFIFO() const;
+        bool isWriteBack() const;
+        bool isWriteAllocate() const;
+        bool isWriteThrough() const;
+
+        static uint32_t log_base2(uint32_t num) {
             uint32_t result = 0U;
 
             if (num == 0)
                 return UINT_MAX;
             else if (num == 1)
                 return 0;
-            else
-            {
-                while (num > 1)
-                {
+            else {
+                while (num > 1) {
                     num = num >> 1;
                     result++;
                 }
@@ -81,65 +80,32 @@ namespace CacheSimulator
             }
         }
 
-        //TODO:implement parameterized constructor
-
-        //getter for offset (calculated)
-        uint32_t getOffsetLen() const
-        {
-            return _offsetLen;
-        }
-
-        uint32_t getIndexLen() const
-        {
-            return _indexLen;
-        }
-
-        void setIndexLen(uint32_t indexLen)
-        {
-            _indexLen = indexLen;
-        }
-
-        void setTagLen(uint32_t tagLen)
-        {
-            _tagLen = tagLen;
-        }
-
-        void setOffsetLen(uint32_t offsetLen)
-        {
-            _offsetLen = offsetLen;
-        }
-        uint32_t getTagLen() const
-        {
-            return _tagLen;
-        }
-
-        Allocation getAlloc() const;
-
-        void setAlloc(Allocation alloc);
-
-        Write getWrite() const;
-
-        void setWrite(Write write);
-
         //set functions:
-        Set *addSet(uint32_t index);
+        void addSet(uint32_t index);
+
         Set *findSet(uint32_t index);
-        void updateLRU(uint32_t index, uint32_t tag, uint32_t maxTime);
-        int getIndexToEvict(uint32_t index, uint32_t tag);
+
+        int evictBlock(uint32_t index, uint32_t tag);
+
         void writeBack(uint32_t index, uint32_t tag);
+
         void writeAllocate(uint32_t index, uint32_t tag);
+
         void writeThrough(uint32_t index, uint32_t tag);
 
 
         uint32_t getIndexFromAddress(uint32_t address) const;
+
         uint32_t getTagFromAddress(uint32_t address) const;
 
-bool checkIfCacheHit(uint32_t index, uint32_t tag);
-    int replaceBlock(uint32_t index, uint32_t tag);
-        void loadFromMainMemory(uint32_t address);
+        bool checkIfCacheHit(uint32_t index, uint32_t tag);
+
         void printResults();
-        void readFromCache(uint32_t address);
+
+
+
         void handleStoreHit(uint32_t index, uint32_t tag);
+
         /* {
                 //Take in all relevant parameters.
                 //Follow logic to update chache/not update
@@ -203,8 +169,9 @@ bool checkIfCacheHit(uint32_t index, uint32_t tag);
 
         void incStoreMisses();
 
-        void incCycles();
-        void addToCycles();
+        void cacheToCpuOperation();
+
+        void memoryToCacheOperation();
 
         uint32_t _loads = 0U;
         uint32_t _stores = 0U;
@@ -216,14 +183,13 @@ bool checkIfCacheHit(uint32_t index, uint32_t tag);
 
     public:
         uint32_t getNumBlocks() const;
-        std::vector<Set> _sets;
+        std::unordered_map<uint32_t, Set> sets;
 
     private:
         //base fields that will be set from constructor
         uint32_t _currNumSets = 0U;
         uint32_t _numSets = 0U;
         uint32_t _numBlocks = 0U;
-
         uint32_t _blockSize = 0U;
 
         //calculated fields

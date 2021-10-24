@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdint>
 #include <iostream>
+#include <cstdio>
 
 #define NUM_ARGS 7
 
@@ -23,6 +24,7 @@ int main(int argc, char **argv)
     string s4 = string(argv[4]);
     string s5 = string(argv[5]);
     string s6 = string(argv[6]);
+
 
     // ensures no illegal combinations of args & all valid
     bool argsValid = CacheSimulator::checkIfArgsValid(s1, s2, s3, s4, s5, s6) == 0;
@@ -61,7 +63,8 @@ int main(int argc, char **argv)
         string line;
 
         // read in file
-        while (getline(cin, line))
+
+        while (getline(std::cin, line))
         {
             operation = line.substr(0, 1);
             address = stoul(line.substr(4, 12), 0, 16);
@@ -86,16 +89,13 @@ int main(int argc, char **argv)
             //LOAD HIT
             else if (operation == "l" && cacheHit)
             {
-                cache.incLoadHits();
                 cache.handleLoadHit(index, tag);
             }
 
             //LOAD MISS
             else if (operation == "l" && !cacheHit)
             {
-                
-                cache.incLoadMisses();
-                cache.handleLoadMiss(index, tag);
+                                cache.handleLoadMiss(index, tag);
             }
             else
             {

@@ -12,14 +12,21 @@ namespace CacheSimulator
     class Set
     {
     public:
-        Set(uint32_t numBlocks, uint32_t index);
+
+        Set(uint32_t numBlocks);
+
+        Set();
         // add destructor?
+
+        Block * findBlockWithTag(uint32_t tag);
+        bool isEmpty() const;
+        void updateLRU(uint32_t maxTime);
+        bool isFull() const;
+        virtual ~Set();
 
         std::vector<Block> _blocks;
 
     private:
-        uint32_t _setIndex;
-        uint32_t _emptyBlocks;
         uint32_t _numBlocks;
     };
 }
