@@ -4,12 +4,22 @@ make clean
 
 make
 
-#./csim 256 4 16 write-allocate write-through lru < example_traces/swim.trace
 
-./csim 256 4 16 write-allocate write-back lru < example_traces/read02.trace
-./csim 2 4 16 write-allocate write-back lru < example_traces/read03.trace
-./csim 256 4 16 write-allocate write-through lru < example_traces/write01.trace
-./csim 256 4 16 write-allocate write-back lru < example_traces/write02.trace
+
+
+
+
+./csim 2 2 4 write-allocate write-through lru < example_traces/ex1.trace
+
+
+
+#./csim 256 4 128 write-allocate write-back lru < example_traces/swim.trace
+#./csim 256 16 64 no-write-allocate write-through lru < example_traces/swim.trace
+#./csim 256 4 16 write-allocate write-through lru < example_traces/swim.trace
+#./csim 256 4 16 write-allocate write-back lru < example_traces/read02.trace
+#./csim 2 4 16 write-allocate write-back lru < example_traces/read03.trace
+#./csim 256 4 16 write-allocate write-through lru < example_traces/write01.trace
+#./csim 256 4 16 write-allocate write-back lru < example_traces/write02.trace
 #./csim 256 4 16 write-allocate write-back lru < example_traces/gcc.trace
 
 
