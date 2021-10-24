@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
                 if (blockIdx != cache.getNumBlocks())
                 { // cache miss
                     if (cache.isWriteAllocate())
-                    {                                     
+                    {
                         cache.loadToCache(index, tag);
                         cache.cacheToCpuOperation();
                         uint32_t blockIdx = cache.getBlockIndex(index, tag);
@@ -110,20 +110,19 @@ int main(int argc, char *argv[])
                         cache.cacheToCpuOperation();
                     }
                     else
-                    {                         // write-through - change value in cache and in main memory
-                        cache._cycles += 100; // update value in main memory
+                    { // write-through - change value in cache and in main memory
+                        cache._cycles += 100;
                     }
-                    cache._storeHits++;
+                    cache.incStoreHits();
                     if (cache.isLRU())
                     {
                         CacheSimulator::Set *s = cache.findSet(index);
                         s->incrementLRU(blockIdx);
-                        delete s;
                     }
                 }
 
                 // increment stores regardless
-                cache._stores++;
+                cache.incStores();
             }
 
             // LOAD!
@@ -132,13 +131,13 @@ int main(int argc, char *argv[])
             {
                 uint32_t blockIdx = cache.getBlockIndex(index, tag);
                 if (blockIdx == cache.getNumBlocks())
-                { // cache miss
-                    // need to load value into cache
+                { 
+                    // cache miss & now need to load value into cache
                     cache.incLoadMisses();
 
-                    //updates FIFO/LRU times
+                    // updates FIFO/LRU times
                     cache.loadToCache(index, tag);
-                    
+
                     cache.cacheToCpuOperation();
                 }
                 else
