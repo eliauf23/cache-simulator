@@ -8,11 +8,10 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 
-namespace CacheSimulator
-{
 
-    uint32_t getValidInteger(std::string str);
+    int getValidInteger(std::string str);
 
     //returns -1 if cache miss, else returns index in cache
     unsigned int isPowerOfTwo(uint32_t num);
@@ -20,8 +19,7 @@ namespace CacheSimulator
     int printErrorMsg(const std::string &errorMsg);
     //input parsing functions
 
-    int checkIfArgsValid(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5,
-                         std::string s6);
-}
+    int checkIfArgsValid( char * s1,  char * s2,  char * s3,  char * s4,  char * s5,
+                          char * s6);
 
 #endif //CSIM_FNS_H

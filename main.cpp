@@ -3,9 +3,10 @@
 #include "block.h"
 #include "set.h"
 #include <string>
-#include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 
 #define NUM_ARGS 7
 
@@ -16,44 +17,42 @@ using std::getline;
 using std::stoul;
 using std::string;
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-    string s1 = string(argv[1]);
-    string s2 = string(argv[2]);
-    string s3 = string(argv[3]);
-    string s4 = string(argv[4]);
-    string s5 = string(argv[5]);
-    string s6 = string(argv[6]);
-
 
     // ensures no illegal combinations of args & all valid
-    bool argsValid = CacheSimulator::checkIfArgsValid(s1, s2, s3, s4, s5, s6) == 0;
-    if(argc != NUM_ARGS) {
-        return CacheSimulator::printErrorMsg("incorrect num args");
-} else if(!argsValid) {
-        return CacheSimulator::printErrorMsg("Invalid args. Try again.");
-    } else {
+
+    if (argc != NUM_ARGS)
+    {
+        return printErrorMsg("incorrect num args");
+    }
+    else if (checkIfArgsValid(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]) != 0)
+    {
+        return printErrorMsg("Invalid args. Try again.");
+    }
+    else
+    {
 
         // parse all command line args
-        uint32_t numSets = CacheSimulator::getValidInteger(s1);
-        uint32_t blocksPerSet = CacheSimulator::getValidInteger(s2);
-        uint32_t blockSize = CacheSimulator::getValidInteger(s3);
+        uint32_t numSets = getValidInteger(argv[1]);
+        uint32_t blocksPerSet = getValidInteger(argv[2]);
+        uint32_t blockSize = getValidInteger(argv[3]);
         // enums from cache.cpp
         CacheSimulator::Allocation alloc;
         CacheSimulator::Write write;
         CacheSimulator::Eviction evict;
 
-        if (s4 == "no-write-allocate")
+        if (strcmp(argv[4], "no-write-allocate") == 0)
             alloc = CacheSimulator::NO_WRITE_ALLOCATE;
         else
             alloc = CacheSimulator::WRITE_ALLOCATE;
 
-        if (s5 == "write-through")
+        if (strcmp(argv[5], "write-through") != 0)
             write = CacheSimulator::WRITE_THROUGH;
         else
             write = CacheSimulator::WRITE_BACK;
 
-        if (s6 == "fifo")
+        if (strcmp(argv[6], "fifo") != 0)
             evict = CacheSimulator::FIFO;
         else
             evict = CacheSimulator::LRU;
@@ -61,9 +60,9 @@ int main(int argc, char **argv)
         // initialize cache
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);
 
-        string operation = ""; // load or store
+        string operation(""); // load or store
         uint32_t address;      // hex address
-        string line;
+        string line("");
 
         // read in file
 
@@ -72,42 +71,103 @@ int main(int argc, char **argv)
             operation = line.substr(0, 1);
             address = stoul(line.substr(4, 12), 0, 16);
 
+            // simulate
+
             uint32_t index = cache.getIndexFromAddress(address);
             uint32_t tag = cache.getTagFromAddress(address);
-            bool cacheHit = cache.checkIfCacheHit(index, tag);
 
-            //STORE HIT
-            if (operation == "s" && cacheHit)
+            uint32_t blockIdx = cache.getBlockIndex(index, tag);
+            // get address of block added
+
+            // STORE!
+            if (operation == "s")
             {
-                cache.incStoreHits();
-                cache.handleStoreHit(index, tag);
-            }
-            //STORE MISS
-            else if (operation == "s" && !cacheHit)
-            {
-                cache.incStoreMisses();
-                cache.handleStoreMiss(index, tag);
+                if (blockIdx != cache.getNumBlocks())
+                { // cache miss
+                    if (cache.isWriteAllocate())
+                    {                                                        // load value into cache and change it there, implies writeBack
+                        cache.loadToCache(index, tag);                       // loading value from main, cache.loadToCache sets lru and fifo counters
+                        cache._cycles++;                                     // writing to value in cache
+                        uint32_t blockIdx = cache.getBlockIndex(index, tag); // get address of block added
+                        if (cache.isWriteBack())
+                        {
+                            cache.sets[index]._blocks[blockIdx].setDirty(true);
+                        }
+                        else
+                        {
+                            cache._cycles += 100; // write to main because store miss and write allocate
+                        }
+                    }
+                    else
+                    { // no-write-allocate - write value straight to main memory (skip over cache)
+                        cache._cycles += 100;
+                    }
+                    cache._storeMisses++;
+                }
+
+                else
+                { // cache hit, blockIdx contains block number
+                    if (cache.isWriteBack())
+                    { // change value in cache, make sure to mark dirty bit
+                        cache.sets[index]._blocks[blockIdx].setDirty(true);
+                        cache._cycles++;
+                    }
+                    else
+                    {                         // write-through - change value in cache and in main memory
+                        cache._cycles += 100; // update value in main memory
+                    }
+                    cache._storeHits++;
+                    if (cache.isLRU())
+                    {
+                        CacheSimulator::Set * s = cache.findSet(index);
+                        s->incrementLRU(blockIdx);
+                        delete s;
+                    }
+                }
+
+                // increment stores regardless
+                cache._stores++;
             }
 
-            //LOAD HIT
-            else if (operation == "l" && cacheHit)
+            // LOAD!
+
+            else if (operation == "l")
             {
-                cache.handleLoadHit(index, tag);
+                uint32_t blockIdx = cache.getBlockIndex(index, tag);
+                if (blockIdx == cache.getNumBlocks())
+                { // cache miss
+                    // need to load value into cache
+                    cache._loadMisses++;
+
+                    cache.loadToCache(index, tag); // cache.loadToCache updates fifo and lru counters
+                    cache._cycles++;
+                }
+                else
+                {
+
+                    cache._cycles++;
+                    cache._loadHits++;
+                    if (cache.isLRU())
+                    {
+                        CacheSimulator::Set * s = cache.findSet(index);
+                        s->incrementLRU(blockIdx);
+                        delete s;
+                    }
+                }
+
+                // increment loads regardless
+                cache._loads++;
             }
 
-            //LOAD MISS
-            else if (operation == "l" && !cacheHit)
-            {
-             cache.handleLoadMiss(index, tag);
-            }
+            // ERROR!
+
             else
             {
-                // error!
-                return CacheSimulator::printErrorMsg("Invalid operation");
-                exit(1);
+                return printErrorMsg("issue with trace file");
             }
         }
         cache.printResults();
+
 
         return 0;
     }
