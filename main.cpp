@@ -28,9 +28,12 @@ int main(int argc, char **argv)
 
     // ensures no illegal combinations of args & all valid
     bool argsValid = CacheSimulator::checkIfArgsValid(s1, s2, s3, s4, s5, s6) == 0;
+    if(argc != NUM_ARGS) {
+        return CacheSimulator::printErrorMsg("incorrect num args");
+} else if(!argsValid) {
+        return CacheSimulator::printErrorMsg("Invalid args. Try again.");
+    } else {
 
-    if (argc == NUM_ARGS && argsValid)
-    {
         // parse all command line args
         uint32_t numSets = CacheSimulator::getValidInteger(s1);
         uint32_t blocksPerSet = CacheSimulator::getValidInteger(s2);
@@ -95,7 +98,7 @@ int main(int argc, char **argv)
             //LOAD MISS
             else if (operation == "l" && !cacheHit)
             {
-                                cache.handleLoadMiss(index, tag);
+             cache.handleLoadMiss(index, tag);
             }
             else
             {
@@ -107,9 +110,5 @@ int main(int argc, char **argv)
         cache.printResults();
 
         return 0;
-    }
-    else
-    {
-        return CacheSimulator::printErrorMsg("Invalid cmd line args.");
     }
 }

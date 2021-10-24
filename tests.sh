@@ -6,12 +6,45 @@ make
 
 
 
+#basic tests
+#./csim 2 2 4 write-allocate write-through lru < example_traces/ex1.trace
+
+#gradescope tests
+
+echo "\n---test 1---------\n"
+./csim 1 1 4 write-allocate write-through lru < example_traces/read02.trace
 
 
+echo "\n---test 2---------\n"
+./csim 256 16 64 no-write-allocate write-through lru < example_traces/write02.trace
 
-./csim 2 2 4 write-allocate write-through lru < example_traces/ex1.trace
+
+echo "\n---test 3---------\n"
+
+./csim 128 32 64 write-allocate write-through lru < example_traces/swim.trace
 
 
+# ./csim 8192 1 16 no-write-allocate write-through lru < example_traces/swim.trace
+# ./csim 8192 1 16 write-allocate write-through lru < example_traces/swim.trace
+# ./csim 8192 1 16 write-allocate write-back lru < example_traces/swim.trace
+# ./csim 2048 4 16 no-write-allocate write-through lru  < example_traces/swim.trace
+# ./csim 2048 4 16 write-allocate write-through lru < example_traces/swim.trace
+# ./csim 2048 4 16 write-allocate write-back lru < example_traces/swim.trace
+# ./csim 1 8192 16 no-write-allocate write-through lru < example_traces/swim.trace
+# ./csim 1 8192 16 write-allocate write-through lru < example_traces/swim.trace
+# ./csim 1 8192 16 write-allocate write-back lru < example_traces/swim.trace
+
+# ./csim 1024 1 128 no-write-allocate write-through lru < example_traces/swim.trace
+# ./csim 1024 1 128 write-allocate write-through lru < example_traces/swim.trace
+# ./csim 1024 1 128 write-allocate write-back lru < example_traces/swim.trace
+
+# ./csim 256 4 128 no-write-allocate write-through lru < example_traces/swim.trace
+# ./csim 256 4 128 write-allocate write-through lru < example_traces/swim.trace
+# ./csim 256 4 128 write-allocate write-back lru < example_traces/swim.trace
+
+# ./csim 1 1024 128 no-write-allocate < example_traces/swim.trace
+# ./csim 1 1024 128 write-allocate write-through lru < example_traces/swim.trace
+# ./csim 1 1024 128 write-allocate write-back lru < example_traces/swim.trace
 
 #./csim 256 4 128 write-allocate write-back lru < example_traces/swim.trace
 #./csim 256 16 64 no-write-allocate write-through lru < example_traces/swim.trace

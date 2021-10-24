@@ -10,31 +10,37 @@
 
 using std::cout;
 using std::endl;
-namespace CacheSimulator {
+namespace CacheSimulator
+{
 
-    enum Allocation {
+    enum Allocation
+    {
         WRITE_ALLOCATE = 0,
         NO_WRITE_ALLOCATE = 1
     };
 
-    enum Write {
+    enum Write
+    {
         WRITE_THROUGH = 0,
         WRITE_BACK = 1
     };
 
-    enum Eviction {
+    enum Eviction
+    {
         LRU = 0,
         FIFO = 1
     };
 
-    class Cache {
+    class Cache
+    {
 
     public:
         Cache() = default;
 
         ~Cache() {}
 
-        Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e) {
+        Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e)
+        {
             _numSets = ns;
             _numBlocks = nb;
             _blockSize = b_size;
@@ -52,8 +58,9 @@ namespace CacheSimulator {
             _indexLen = log_base2(_numSets);
             _tagLen = 32 - (_offsetLen + _indexLen);
 
-            //initialize cache
-            for (uint32_t i = 0; i < ns; i++) {
+            // initialize cache
+            for (uint32_t i = 0; i < ns; i++)
+            {
                 addSet(i);
             }
         };
@@ -64,15 +71,18 @@ namespace CacheSimulator {
         bool isWriteAllocate() const;
         bool isWriteThrough() const;
 
-        static uint32_t log_base2(uint32_t num) {
+        static uint32_t log_base2(uint32_t num)
+        {
             uint32_t result = 0U;
 
             if (num == 0)
                 return UINT_MAX;
             else if (num == 1)
                 return 0;
-            else {
-                while (num > 1) {
+            else
+            {
+                while (num > 1)
+                {
                     num = num >> 1;
                     result++;
                 }
@@ -80,7 +90,7 @@ namespace CacheSimulator {
             }
         }
 
-        //set functions:
+        // set functions:
         void addSet(uint32_t index);
 
         Set *findSet(uint32_t index);
@@ -93,7 +103,6 @@ namespace CacheSimulator {
 
         void writeThrough(uint32_t index, uint32_t tag);
 
-
         uint32_t getIndexFromAddress(uint32_t address) const;
 
         uint32_t getTagFromAddress(uint32_t address) const;
@@ -101,8 +110,6 @@ namespace CacheSimulator {
         bool checkIfCacheHit(uint32_t index, uint32_t tag);
 
         void printResults();
-
-
 
         void handleStoreHit(uint32_t index, uint32_t tag);
 
@@ -155,11 +162,14 @@ namespace CacheSimulator {
                     //if writethrough, load to memory (aka Cycles += 100)
                 } */
 
-        //functions to initialize cache
+        // functions to initialize cache
 
         void handleLoadHit(uint32_t index, uint32_t tag);
 
-        //results!
+        // results!
+
+        void incLoads();
+        void incStores();
 
         void incLoadHits();
 
@@ -186,22 +196,22 @@ namespace CacheSimulator {
         std::unordered_map<uint32_t, Set> sets;
 
     private:
-        //base fields that will be set from constructor
+        // base fields that will be set from constructor
         uint32_t _currNumSets = 0U;
         uint32_t _numSets = 0U;
         uint32_t _numBlocks = 0U;
         uint32_t _blockSize = 0U;
 
-        //calculated fields
+        // calculated fields
         uint32_t _offsetLen = 0U;
         uint32_t _indexLen = 0U;
         uint32_t _tagLen = 0U;
 
-        //cache properties (calculated as well)
+        // cache properties (calculated as well)
         Allocation _alloc;
         Write _write;
         Eviction _evictionType;
     };
-    //end of cache class
+    // end of cache class
 }
-#endif //CACHE_H
+#endif // CACHE_H

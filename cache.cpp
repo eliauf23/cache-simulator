@@ -255,11 +255,16 @@ namespace CacheSimulator {
 
     }
 
+//implement functions: loadToCache
+//incrementFIFO
+//incrementLRU
+
+
 
     void Cache::printResults() {
         // prints out results with required formatting
 
-        cout << "Total loads: " << _loadMisses + _loadHits << endl;
+        cout << "Total loads: " << _loads << endl;
         cout << "Total stores: " << _storeMisses + _storeHits << endl;
         cout << "Load hits: " << _loadHits << endl;
         cout << "Load misses: " << _loadMisses << endl;
@@ -268,6 +273,12 @@ namespace CacheSimulator {
         cout << "Total cycles: " << _cycles << endl;
     }
 
+    void Cache::incLoads() {
+        _loads++;
+    }
+    void Cache::incStores() {
+        stores++;
+    }
 
     void Cache::incLoadHits() {
         _loadHits++;
@@ -286,11 +297,13 @@ namespace CacheSimulator {
     }
 
     void Cache::cacheToCpuOperation() {
-        _cycles += (_blockSize / 4);
+        _cycles ++;
     }
 
     void Cache::memoryToCacheOperation() {
-        _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
+        uint32_t numWords = (uint32_t) pow(2, _offsetLen - 2);
+
+        _cycles += (MEM_ACCESS_CYCLES * numWords);
     }
 
     bool Cache::isLRU() const {
