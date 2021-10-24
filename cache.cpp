@@ -21,247 +21,362 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::unordered_map;
-namespace CacheSimulator {
+namespace CacheSimulator
+{
 
-    void Cache::addSet(uint32_t index) {
-        Set *s = new Set(_numBlocks);
-        sets.emplace(index, *s);
-        _currNumSets++;
+    // new functions!
 
+    uint32_t Cache::getNumBlocks() const
+    {
+        return _numBlocks;
     }
+    uint32_t Cache::getBlockIndex(uint32_t index, uint32_t tag)
+    {
 
-    Set *Cache::findSet(uint32_t index) {
-        auto iter = sets.find(index);
-        if (iter != sets.end()) {
-            return &sets[index];
-        } else {
-            return new Set(_numBlocks);
-        }
-    }
-
-    //utilities:
-    bool Cache::checkIfCacheHit(uint32_t index, uint32_t tag) {
-
-        Set *s = findSet(index);
-        Block *b;
-        if (s->isEmpty()) {
-            return false;
-        } else {
-            b = s->findBlockWithTag(tag);
-            if (!b->isValid()) {
-                delete b;
-                return false;
-            }
-            return true;
-        }
-
-    }
-
-
-    uint32_t Cache::getIndexFromAddress(uint32_t address) const {
-        if (_indexLen == 0U) return 0U; // if fully-assoc cache
-        address = address << _tagLen; //this cuts off more significant bits corresponding to tag
-        return address >> (32U - _indexLen); //this cuts off less significant bits corresponding to offset
-    }
-
-    uint32_t Cache::getTagFromAddress(uint32_t address) const {
-        return address >> (_indexLen + _offsetLen);
-    }
-
-
-    //read:
-    void Cache::handleLoadHit(uint32_t index, uint32_t tag) {
-        //increment load hits, num cycles
-
-        //know set is not empty: 
-        Set *s = findSet(index);
-        Block *b = s->findBlockWithTag(tag);
-
-        if (!b->isValid()) {
-            delete b; //delete dummy block
-            handleLoadMiss(index, tag);
-
-        } else {
-            incLoadHits();
-            cacheToCpuOperation(); //by 1 for cache access
-            //update counters for LRU
-            if (isLRU()) s->updateLRU(_numBlocks);
-        }
-
-    }
-
-    void Cache::handleLoadMiss(uint32_t index, uint32_t tag) {
-        incLoadMisses();
-        Set *s = findSet(index);
-        //get corresponding cache block from set
-
-        //case 1: it's empty (i.e. there's no valid data there)
-        //+ 100 cycles to load block & + 1 to load block to cache
-
-        //case 2: we have to evict existing block
-        //is cache write back?
-        //then +100 cycles to write back block
-        //mark block as valid, update tag, updateLRU for set
-        //mark block as dirty
-        //else if write thru:
-        //+100 cycles to load block from memory to cache + 1 to load block to cache
-
-        for (auto &block: s->_blocks) {
-            // iterate thru all blocks in set until you find place to put block
-
-            if (!block.isValid()) {
-                //update block
-                block.setTag(tag);
-                block.setValid(true);
-                block.resetTime();
-                s->updateLRU(_numBlocks);
-
-                //increment cycles
-                memoryToCacheOperation();
-                cacheToCpuOperation();
-
-                return;
-            }
-        }
-        //if you reach here - need to evict block to make room
-
-
-        int evicted_index = evictBlock(index, tag);
-        //if dirty, flip dirty bit and add to cycles bc you
-
-        if (isWriteBack())
-            if (evicted_index != -1 && s->_blocks[evicted_index].isDirty()) {
-                s->findBlockWithTag(tag)->setDirty(false);
-
-                memoryToCacheOperation(); //load block
-            }
-
-        memoryToCacheOperation();
-
-        cacheToCpuOperation();
-
-    }
-
-    //will also set block props = new block props
-    int Cache::evictBlock(uint32_t index, uint32_t tag) {
-
-        Set *s = findSet(index);
-        if(!s->isFull()) return -1;
-
+        Set *set = findSet(index);
         int i = 0;
-
-
-        for (auto &block: s->_blocks) {
-            if(block.getTime() >= _numBlocks) {
+        for (auto &block : set->_blocks)
+        {
+            if (block.isValid() && block.getTag() == tag)
+            { // check if block has data and if tags are equal for matching
+                delete set;
                 return i;
             }
             i++;
         }
-
-        return -1 ;
+        delete set;
+        return _numBlocks; // 1 beyond max index in block vector
     }
 
+    void Cache::loadToCache(uint32_t index, uint32_t tag)
+    {
+        uint32_t idxToEvict = _numBlocks;
 
-    void Cache::handleStoreMiss(uint32_t index, uint32_t tag) {
-        if (_alloc == WRITE_ALLOCATE) {
-            writeAllocate(index, tag); // load block from main memory into cache
-            memoryToCacheOperation(); //add to cycles in general because you need to load block from main memory
+        Set *s = findSet(index);
 
+        if (!s->isFull())
+        {
+            for (auto &block : s->_blocks)
+            { // find empty block
+                if (!block.isValid())
+                {
+                    block.setValid(true);
+                    block.setTag(tag);
+                    block.setDirty(false);
 
-            if (_write == WRITE_THROUGH) {
-                writeThrough(index, tag);
-                memoryToCacheOperation();
-                cacheToCpuOperation();
-            } else { // write == WRITE_BACK
-                writeBack(index, tag);
-                cacheToCpuOperation(); //write to cache only
-
-            }
-        } else { // if no-write-allocate just add to cycles
-            memoryToCacheOperation();
-        }
-    }
-
-    void Cache::handleStoreHit(uint32_t index, uint32_t tag) {
-        if (isWriteThrough()) {
-            writeThrough(index, tag);
-            memoryToCacheOperation();
-        } else {                          // it was write-back
-            writeBack(index, tag); // writes to cache & sets block=dirty
-            //write to cache only
-
-        }
-        cacheToCpuOperation();
-    }
-
-    void Cache::writeThrough(uint32_t index, uint32_t tag) {
-        if (isLRU()) {
-            Set *s = findSet(index);
-
-            for (auto &block: s->_blocks) { // iterate thru all blocks in set
-
-                if (block.getTag() == tag && block.isValid()) {
-                    uint32_t maxTime = block.getTime();
-                    block.resetTime();
-
-                    s->updateLRU(maxTime);
+                    delete s;
                     return;
                 }
             }
+            s->decrementNumEmptyBlocks();
         }
+        else
+        { // 0 empty _blocks in set, need to evict
+            idxToEvict = s->findMaxTime();
+            if (isLRU())
+            {
+                s->incrementLRU(idxToEvict);
+            }
+            else
+            {
+                s->incrementFIFO(idxToEvict);
+            }
 
-    }
-
-    void Cache::writeBack(uint32_t index, uint32_t tag) {
-        Set *s = findSet(index);
-        for (auto & block: s->_blocks) { // iterate thru all blocks in set
-
-            if (block.getTag() == tag && block.isValid()) {
-                block.setDirty(true);
-                if (isLRU()) {
-                    uint32_t maxTime = block.getTime();
-                    block.resetTime();
-                    s->updateLRU(maxTime);
+            if (isWriteBack())
+            {
+                if (s->_blocks[idxToEvict].isDirty())
+                {
+                    memoryToCacheOperation(); // write modified block back to mem
                 }
-                return;
             }
         }
+        // update block
 
+        if (idxToEvict < _numBlocks)
+        {
+            s->_blocks[idxToEvict].setTag(tag);
+            s->_blocks[idxToEvict].setValid(true);
+            s->_blocks[idxToEvict].setDirty(false);
+        }
+
+        // increment num cycles
+
+        memoryToCacheOperation();
+        delete s;
     }
 
-    void Cache::writeAllocate(uint32_t index, uint32_t tag) {
-        //cout << "enter write alloc" << endl;
-        Set *s = findSet(index);
+    // end of new functions!
+    // TODO: need to add to cache.h
+    void Cache::addSet(uint32_t index)
+    {
+        Set s(_numBlocks);
+        sets.emplace(index, s);
+        _currNumSets++;
+    }
 
-        for (uint32_t i = 0; i < _numBlocks; i++) {
-            Block *b = s->findBlockWithTag(tag);
+    Set *Cache::findSet(uint32_t index)
+    {
+        auto iter = sets.find(index);
+        if (iter != sets.end())
+        {
+            return &sets[index];
+        }
+        else
+        {
+            return new Set(_numBlocks);
+        }
+    }
 
-            if (!b->isValid()) { //there exists an empty block
-                b->setTag(tag);
-                b->setValid(true);
-                b->resetTime();
+    // utilities:
+    bool Cache::checkIfCacheHit(uint32_t index, uint32_t tag)
+    {
 
-                s->updateLRU(_numBlocks);
-                return;
+        if (findSet(index)->isEmpty())
+        {
+            return false;
+        }
+        else
+        {
+
+            if (!findSet(index)->findBlockWithTag(tag)->isValid())
+            {
+
+                return false;
             }
+
+            return true;
         }
-        //if you get here, need to evict block
-
-        int evicted_index = evictBlock(index, tag);
-
-        if (evicted_index != -1 && findSet(index)->_blocks[evicted_index].isDirty()) {
-            memoryToCacheOperation(); //because you need to write dirty block back to main memory
-        }
-
     }
 
-//implement functions: loadToCache
-//incrementFIFO
-//incrementLRU
+    uint32_t Cache::getIndexFromAddress(uint32_t address) const
+    {
+        if (_indexLen == 0U)
+            return 0U;                       // if fully-assoc cache
+        address = address << _tagLen;        // this cuts off more significant bits corresponding to tag
+        return address >> (32U - _indexLen); // this cuts off less significant bits corresponding to offset
+    }
 
+    uint32_t Cache::getTagFromAddress(uint32_t address) const
+    {
+        return address >> (_indexLen + _offsetLen);
+    }
 
+    /*    // read:
+       void Cache::handleLoadHit(uint32_t index, uint32_t tag)
+       {
+           // increment load hits, num cycles
 
-    void Cache::printResults() {
+           // know set is not empty:
+           Set *s = findSet(index);
+           Block *b = s->findBlockWithTag(tag);
+
+           if (!b->isValid())
+           {
+               delete b; // delete dummy block
+               handleLoadMiss(index, tag);
+           }
+           else
+           {
+               incLoadHits();
+               cacheToCpuOperation(); // by 1 for cache access
+               // update counters for LRU
+               if (isLRU())
+                   s->updateLRU(_numBlocks);
+           }
+       }
+
+       void Cache::handleLoadMiss(uint32_t index, uint32_t tag)
+       {
+           incLoadMisses();
+           Set *s = findSet(index);
+           // get corresponding cache block from set
+
+           // case 1: it's empty (i.e. there's no valid data there)
+           //+ 100 cycles to load block & + 1 to load block to cache
+
+           // case 2: we have to evict existing block
+           // is cache write back?
+           // then +100 cycles to write back block
+           // mark block as valid, update tag, updateLRU for set
+           // mark block as dirty
+           // else if write thru:
+           //+100 cycles to load block from memory to cache + 1 to load block to cache
+
+           for (auto &block : s->_blocks)
+           {
+               // iterate thru all blocks in set until you find place to put block
+
+               if (!block.isValid())
+               {
+                   // update block
+                   block.setTag(tag);
+                   block.setValid(true);
+                   block.resetTime();
+                   s->updateLRU(_numBlocks);
+
+                   // increment cycles
+                   memoryToCacheOperation();
+                   cacheToCpuOperation();
+
+                   return;
+               }
+           }
+           // if you reach here - need to evict block to make room
+
+           int evicted_index = evictBlock(index, tag);
+           // if dirty, flip dirty bit and add to cycles bc you
+
+           if (isWriteBack())
+               if (evicted_index != -1 && s->_blocks[evicted_index].isDirty())
+               {
+                   s->findBlockWithTag(tag)->setDirty(false);
+
+                   memoryToCacheOperation(); // load block
+               }
+
+           memoryToCacheOperation();
+
+           cacheToCpuOperation();
+       }
+
+       // will also set block props = new block props
+       int Cache::evictBlock(uint32_t index, uint32_t tag)
+       {
+
+           Set *s = findSet(index);
+           if (!s->isFull())
+               return -1;
+
+           int i = 0;
+
+           for (auto &block : s->_blocks)
+           {
+               if (block.getTime() >= _numBlocks)
+               {
+                   return i;
+               }
+               i++;
+           }
+
+           return -1;
+       }
+
+       void Cache::handleStoreMiss(uint32_t index, uint32_t tag)
+       {
+           if (_alloc == WRITE_ALLOCATE)
+           {
+               writeAllocate(index, tag); // load block from main memory into cache
+               memoryToCacheOperation();  // add to cycles in general because you need to load block from main memory
+
+               if (_write == WRITE_THROUGH)
+               {
+                   writeThrough(index, tag);
+                   memoryToCacheOperation();
+                   cacheToCpuOperation();
+               }
+               else
+               { // write == WRITE_BACK
+                   writeBack(index, tag);
+                   cacheToCpuOperation(); // write to cache only
+               }
+           }
+           else
+           { // if no-write-allocate just add to cycles
+               memoryToCacheOperation();
+           }
+       }
+
+       void Cache::handleStoreHit(uint32_t index, uint32_t tag)
+       {
+           if (isWriteThrough())
+           {
+               writeThrough(index, tag);
+               memoryToCacheOperation();
+           }
+           else
+           {                          // it was write-back
+               writeBack(index, tag); // writes to cache & sets block=dirty
+               // write to cache only
+           }
+           cacheToCpuOperation();
+       }
+
+       void Cache::writeThrough(uint32_t index, uint32_t tag)
+       {
+           if (isLRU())
+           {
+               Set *s = findSet(index);
+
+               for (auto &block : s->_blocks)
+               { // iterate thru all blocks in set
+
+                   if (block.getTag() == tag && block.isValid())
+                   {
+                       uint32_t maxTime = block.getTime();
+                       block.resetTime();
+
+                       s->updateLRU(maxTime);
+                       return;
+                   }
+               }
+           }
+       }
+
+       void Cache::writeBack(uint32_t index, uint32_t tag)
+       {
+           Set *s = findSet(index);
+           for (auto &block : s->_blocks)
+           { // iterate thru all blocks in set
+
+               if (block.getTag() == tag && block.isValid())
+               {
+                   block.setDirty(true);
+                   if (isLRU())
+                   {
+                       uint32_t maxTime = block.getTime();
+                       block.resetTime();
+                       s->updateLRU(maxTime);
+                   }
+                   return;
+               }
+           }
+       }
+
+       void Cache::writeAllocate(uint32_t index, uint32_t tag)
+       {
+           // cout << "enter write alloc" << endl;
+           Set *s = findSet(index);
+
+           for (uint32_t i = 0; i < _numBlocks; i++)
+           {
+               Block *b = s->findBlockWithTag(tag);
+
+               if (!b->isValid())
+               { // there exists an empty block
+                   b->setTag(tag);
+                   b->setValid(true);
+                   b->resetTime();
+
+                   s->updateLRU(_numBlocks);
+                   return;
+               }
+           }
+           // if you get here, need to evict block
+
+           int evicted_index = evictBlock(index, tag);
+
+           if (evicted_index != -1 && findSet(index)->_blocks[evicted_index].isDirty())
+           {
+               memoryToCacheOperation(); // because you need to write dirty block back to main memory
+           }
+       } */
+
+    // implement functions: loadToCache
+    // incrementFIFO
+    // incrementLRU
+
+    void Cache::printResults()
+    {
         // prints out results with required formatting
 
         cout << "Total loads: " << _loads << endl;
@@ -273,54 +388,65 @@ namespace CacheSimulator {
         cout << "Total cycles: " << _cycles << endl;
     }
 
-    void Cache::incLoads() {
+    void Cache::incLoads()
+    {
         _loads++;
     }
-    void Cache::incStores() {
-        stores++;
+    void Cache::incStores()
+    {
+        _stores++;
     }
 
-    void Cache::incLoadHits() {
+    void Cache::incLoadHits()
+    {
         _loadHits++;
     }
 
-    void Cache::incLoadMisses() {
+    void Cache::incLoadMisses()
+    {
         _loadMisses++;
     }
 
-    void Cache::incStoreHits() {
+    void Cache::incStoreHits()
+    {
         _storeHits++;
     }
 
-    void Cache::incStoreMisses() {
+    void Cache::incStoreMisses()
+    {
         _storeMisses++;
     }
 
-    void Cache::cacheToCpuOperation() {
-        _cycles ++;
+    void Cache::cacheToCpuOperation()
+    {
+        _cycles++;
     }
 
-    void Cache::memoryToCacheOperation() {
-        uint32_t numWords = (uint32_t) pow(2, _offsetLen - 2);
+    void Cache::memoryToCacheOperation()
+    {
+        uint32_t numWords = (uint32_t)pow(2, _offsetLen - 2);
 
         _cycles += (MEM_ACCESS_CYCLES * numWords);
     }
 
-    bool Cache::isLRU() const {
+    bool Cache::isLRU() const
+    {
         return _evictionType == CacheSimulator::LRU;
     }
-    bool Cache::isFIFO() const {
+    bool Cache::isFIFO() const
+    {
         return _evictionType == CacheSimulator::FIFO;
-
     }
-    bool Cache::isWriteBack() const {
+    bool Cache::isWriteBack() const
+    {
         return _write == CacheSimulator::WRITE_BACK;
-
     }
-    bool Cache::isWriteAllocate() const {
+    bool Cache::isWriteAllocate() const
+    {
         return _alloc == CacheSimulator::WRITE_ALLOCATE;
     }
-    bool Cache::isWriteThrough() const {
+    bool Cache::isWriteThrough() const
+    {
         return _write == CacheSimulator::WRITE_THROUGH;
     }
 }

@@ -65,6 +65,10 @@ namespace CacheSimulator
             }
         };
 
+uint32_t getBlockIndex (uint32_t index, uint32_t tag);
+        void loadToCache(uint32_t index, uint32_t tag);
+
+        //end of new funs.
         bool isLRU() const;
         bool isFIFO() const;
         bool isWriteBack() const;
@@ -191,7 +195,7 @@ namespace CacheSimulator
         uint32_t _storeMisses = 0U;
         uint32_t _cycles = 0U;
 
-    public:
+
         uint32_t getNumBlocks() const;
         std::unordered_map<uint32_t, Set> sets;
 
