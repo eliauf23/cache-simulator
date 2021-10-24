@@ -1,7 +1,9 @@
 #include "csim_fns.h"
 #include "cache.h"
+#include <string>
 #include <bitset>
 #include <cstdint>
+
 
 namespace CacheSimulator
 {
