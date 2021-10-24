@@ -50,6 +50,6 @@ namespace CacheSimulator {
     }
 
     void Block::resetTime() {
-        _time = 1;
+        _time = 0;
     }
 }

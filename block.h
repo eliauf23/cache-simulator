@@ -8,6 +8,8 @@ class Block
 {
 public:
     Block();
+    ~Block() {}
+
     Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time);
     Block(uint32_t tag);
 
