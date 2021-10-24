@@ -12,13 +12,19 @@ namespace CacheSimulator
     class Set
     {
     public:
-
         Set(uint32_t numBlocks);
 
         Set();
+
         // add destructor?
 
-        Block * findBlockWithTag(uint32_t tag);
+        uint32_t findMaxTime();
+        void incrementLRU(uint32_t idxToAccess);
+        void incrementFIFO(uint32_t idxToAccess);
+        void decrementNumEmptyBlocks();
+        uint32_t getNumEmptyBlocks();
+
+        Block *findBlockWithTag(uint32_t tag);
         bool isEmpty() const;
         void updateLRU(uint32_t maxTime);
         bool isFull() const;
@@ -28,6 +34,7 @@ namespace CacheSimulator
 
     private:
         uint32_t _numBlocks;
+        uint32_t _emptyBlocks;
     };
 }
 
