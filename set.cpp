@@ -91,10 +91,12 @@ namespace CacheSimulator
 
             if (block.isValid() && block.getTime() <= accessCounter)
             {
+                std::cout << block.getTime() << std::endl;
                 block.incrementTime();
+                            std::cout << block.getTime() << std::endl;
+
             }
         }
-
         _blocks[idxToAccess].resetTime();
     }
 
@@ -104,7 +106,6 @@ namespace CacheSimulator
         {
             block.incrementTime();
         }
-
         _blocks[idxToAccess].resetTime();
     }
 }

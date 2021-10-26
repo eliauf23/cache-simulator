@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         else
             write = CacheSimulator::WRITE_BACK;
 
-        if (strcmp(argv[6], "fifo") != 0)
+        if (strcmp(argv[6], "fifo") == 0)
             evict = CacheSimulator::FIFO;
         else
             evict = CacheSimulator::LRU;
@@ -97,12 +97,12 @@ int main(int argc, char *argv[])
                         else
                         {
                             //cache miss + write alloc + WRITE THRU
-                            cache._cycles += 100; 
+                            cache.memoryToCacheOperation();
                         }
                     }
                     else
                     { // no-write-allocate: write directly to main memory w/o writing to cache
-                        cache._cycles += 100;
+                        cache.memoryToCacheOperation();
                     }
                     cache.incStoreMisses();
                 }
@@ -113,12 +113,13 @@ int main(int argc, char *argv[])
                     { // change value in cache, make sure to mark dirty bit
                         cache.sets[index]._blocks[blockIdx].setDirty(true);
                         cache.cacheToCpuOperation();
-                    }
-                    else
+                    } else
                     { // write-through - change value in cache and in main memory
-                        cache._cycles += 100;
+                        cache.memoryToCacheOperation();
                     }
                     cache.incStoreHits();
+
+                    
                     if (cache.isLRU())
                     {
                         CacheSimulator::Set *s = cache.findSet(index);
@@ -134,6 +135,9 @@ int main(int argc, char *argv[])
 
             else if (operation == "l")
             {
+                                // increment loads regardless
+                cache.incLoads();
+                
                 uint32_t blockIdx = cache.getBlockIndex(index, tag);
                 if (blockIdx == cache.getNumBlocks())
                 { 
@@ -157,9 +161,6 @@ int main(int argc, char *argv[])
                         
                     }
                 }
-
-                // increment loads regardless
-                cache.incLoads();
             }
 
             // ERROR!

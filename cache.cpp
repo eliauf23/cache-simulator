@@ -72,29 +72,34 @@ namespace CacheSimulator
                 {
                     s->_blocks[i].setValid(true);
                     s->_blocks[i].setTag(tag);
-                    s->_blocks[i].setDirty(false);
-
-                this->memoryToCacheOperation();
-                s->decrementNumEmptyBlocks();
-
-                    return;
+                    s->_blocks[i].setDirty(false);                
+                    break;
                 }
             }
+                    this->memoryToCacheOperation();
+                    s->decrementNumEmptyBlocks();
+
         }
         else
         { // 0 empty _blocks in set, need to evict
                     cout << "set is full: need to evict" << endl;
 
+//TODO: update counters regardless of set being full so that when you need to evit
+//a block later you've kept track of the order they were put in the array (fifo/lru credit score)
+
+
+
+
             idxToEvict = s->findMaxTime();
+
             if (this->isLRU())
             {
                 cout << "inc lru" << endl;
                 s->incrementLRU(idxToEvict);
             }
-            else
+            else if(this->isFIFO())
             {
-                    cout << "inc fifo" << endl;
-
+                cout << "inc fifo" << endl;
                 s->incrementFIFO(idxToEvict);
             }
 
@@ -112,19 +117,17 @@ namespace CacheSimulator
 
 
             }
-        }
-        // update block and "evict old block"
+             // update block and "evict old block"
         if (idxToEvict < _numBlocks)
         {
             s->_blocks[idxToEvict].setTag(tag);
             s->_blocks[idxToEvict].setValid(true);
             s->_blocks[idxToEvict].setDirty(false);
+            this->memoryToCacheOperation();
+
         }
-
-        // increment num cycles
-
-        this->memoryToCacheOperation();
-
+        }
+       
     }
 
     // end of new functions!
@@ -447,7 +450,7 @@ namespace CacheSimulator
 
     void Cache::memoryToCacheOperation()
     {
-        cout << getBlockSize() << " " << "cycles: " << (100 * (getBlockSize() / 4)) << endl;
+       // cout << getBlockSize() << " " << "cycles: " << (100 * (getBlockSize() / 4)) << endl;
 
         _cycles += (100 * (getBlockSize() / 4));
     }
