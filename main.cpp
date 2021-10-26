@@ -59,12 +59,11 @@ int main(int argc, char *argv[])
         // initialize cache
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);
 
-        string operation(""); // load or store
+        string operation; // load or store
         uint32_t address;     // hex address
-        string line("");
+        string line;
 
         // read in file
-
         while (getline(std::cin, line))
         {
             operation = line.substr(0, 1);
@@ -79,20 +78,26 @@ int main(int argc, char *argv[])
             // STORE!
             if (operation == "s")
             {
-                if (blockIdx != cache.getNumBlocks())
+                if (blockIdx == cache.getNumBlocks())
                 { // cache miss
+
                     if (cache.isWriteAllocate())
                     {
+                        //load from main memory to cache
                         cache.loadToCache(index, tag);
+                        //load word from cache to CPU
                         cache.cacheToCpuOperation();
                         uint32_t blockIdx = cache.getBlockIndex(index, tag);
+
+
                         if (cache.isWriteBack())
                         {
                             cache.sets[index]._blocks[blockIdx].setDirty(true);
                         }
                         else
                         {
-                            cache._cycles += 100; // write alloc & write thru so need to write thru
+                            //cache miss + write alloc + WRITE THRU
+                            cache._cycles += 100; 
                         }
                     }
                     else
@@ -149,6 +154,7 @@ int main(int argc, char *argv[])
                     {
                         CacheSimulator::Set *s = cache.findSet(index);
                         s->incrementLRU(blockIdx);
+                        
                     }
                 }
 
