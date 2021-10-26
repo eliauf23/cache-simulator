@@ -24,7 +24,13 @@ using std::unordered_map;
 namespace CacheSimulator
 {
 
+
     // new functions!
+    
+    uint32_t Cache::getBlockSize() const
+    {
+        return _blockSize;
+    }
 
     uint32_t Cache::getNumBlocks() const
     {
@@ -49,45 +55,62 @@ namespace CacheSimulator
 
     void Cache::loadToCache(uint32_t index, uint32_t tag)
     {
+        cout << "load to cache :)" << endl;
         uint32_t idxToEvict = _numBlocks;
 
         Set *s = findSet(index);
 
         if (!s->isFull())
         {
-            for (auto &block : s->_blocks)
-            { // find empty block
-                if (!block.isValid())
-                {
-                    block.setValid(true);
-                    block.setTag(tag);
-                    block.setDirty(false);
+            cout << "set is not full" << endl;
 
+            for (uint32_t i = 0; i < s->_blocks.size(); i++ )
+            { // find empty block
+
+
+                if (!s->_blocks[i].isValid())
+                {
+                    s->_blocks[i].setValid(true);
+                    s->_blocks[i].setTag(tag);
+                    s->_blocks[i].setDirty(false);
+
+                this->memoryToCacheOperation();
+                s->decrementNumEmptyBlocks();
 
                     return;
                 }
             }
-            s->decrementNumEmptyBlocks();
         }
         else
         { // 0 empty _blocks in set, need to evict
+                    cout << "set is full: need to evict" << endl;
+
             idxToEvict = s->findMaxTime();
-            if (isLRU())
+            if (this->isLRU())
             {
+                cout << "inc lru" << endl;
                 s->incrementLRU(idxToEvict);
             }
             else
             {
+                    cout << "inc fifo" << endl;
+
                 s->incrementFIFO(idxToEvict);
             }
 
-            if (isWriteBack())
+            if (this->isWriteBack())
             {
+                cout << "is write back" << endl;
                 if (s->_blocks[idxToEvict].isDirty())
                 {
+                    cout << "block to evict is dirty" << endl;
+
                     // write modified block back to mem
-                    memoryToCacheOperation(); 
+                    this->memoryToCacheOperation(); 
                 }
+            } else { //TODO:handle write thru case?
+
+
             }
         }
         // update block and "evict old block"
@@ -100,7 +123,7 @@ namespace CacheSimulator
 
         // increment num cycles
 
-        memoryToCacheOperation();
+        this->memoryToCacheOperation();
 
     }
 
@@ -130,14 +153,14 @@ namespace CacheSimulator
     bool Cache::checkIfCacheHit(uint32_t index, uint32_t tag)
     {
 
-        if (findSet(index)->isEmpty() )
+        if (this->findSet(index)->isEmpty() )
         {
             return false;
         }
         else
         {
 
-            if (!findSet(index)->findBlockWithTag(tag)->isValid())
+            if (!this->findSet(index)->findBlockWithTag(tag)->isValid())
             {
 
                 return false;
@@ -418,14 +441,15 @@ namespace CacheSimulator
 
     void Cache::cacheToCpuOperation()
     {
+        cout << "incrementing cycles!" << endl;
         _cycles++;
     }
 
     void Cache::memoryToCacheOperation()
     {
-        uint32_t numWords = (uint32_t)pow(2, _offsetLen - 2);
+        cout << getBlockSize() << " " << "cycles: " << (100 * (getBlockSize() / 4)) << endl;
 
-        _cycles += (MEM_ACCESS_CYCLES * numWords);
+        _cycles += (100 * (getBlockSize() / 4));
     }
 
     bool Cache::isLRU() const

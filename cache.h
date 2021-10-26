@@ -195,7 +195,7 @@ uint32_t getBlockIndex (uint32_t index, uint32_t tag);
         uint32_t _storeMisses = 0U;
         uint32_t _cycles = 0U;
 
-
+    uint32_t getBlockSize() const;
         uint32_t getNumBlocks() const;
         std::unordered_map<uint32_t, Set> sets;
 
