@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         else
             alloc = CacheSimulator::WRITE_ALLOCATE;
 
-        if (strcmp(argv[5], "write-through") != 0)
+        if (strcmp(argv[5], "write-through") == 0)
             write = CacheSimulator::WRITE_THROUGH;
         else
             write = CacheSimulator::WRITE_BACK;
