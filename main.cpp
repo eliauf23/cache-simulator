@@ -1,7 +1,6 @@
 #include "csim_fns.h"
 #include "cache.h"
 #include "block.h"
-#include "set.h"
 #include <string>
 #include <cstdlib>
 #include <iostream>
@@ -51,116 +50,38 @@ int main(int argc, char *argv[])
         else
             write = CacheSimulator::WRITE_BACK;
 
-        if (strcmp(argv[6], "fifo") == 0)
-            evict = CacheSimulator::FIFO;
-        else
+        if (strcmp(argv[6], "fifo") != 0)
             evict = CacheSimulator::LRU;
+        else
+            evict = CacheSimulator::FIFO;
 
         // initialize cache
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);
 
-        string operation; // load or store
+        char operation = 'd'; // default
         uint32_t address;     // hex address
         string line;
-
+        int num;
         // read in file
-        while (getline(std::cin, line))
+        while (cin)
         {
-            operation = line.substr(0, 1);
-            address = stoul(line.substr(4, 12), 0, 16);
-
-            // simulate
-
-            uint32_t index = cache.getIndexFromAddress(address);
-            uint32_t tag = cache.getTagFromAddress(address);
-            uint32_t blockIdx = cache.getBlockIndex(index, tag);
+            cin >> operation >> std::hex >> address >> num;
+            if (operation == 'd')
+                break; // i.e. if file is empty/you hit end of file without errors
 
             // STORE!
-            if (operation == "s")
+            else if (operation == 's')
             {
-                if (blockIdx == cache.getNumBlocks())
-                { // cache miss
 
-                    if (cache.isWriteAllocate())
-                    {
-                        //load from main memory to cache
-                        cache.loadToCache(index, tag);
-                        //load word from cache to CPU
-                        cache.cacheToCpuOperation();
-                        uint32_t blockIdx = cache.getBlockIndex(index, tag);
-
-
-                        if (cache.isWriteBack())
-                        {
-                            cache.sets[index]._blocks[blockIdx].setDirty(true);
-                        }
-                        else
-                        {
-                            //cache miss + write alloc + WRITE THRU
-                            cache.memoryToCacheOperation();
-                        }
-                    }
-                    else
-                    { // no-write-allocate: write directly to main memory w/o writing to cache
-                        cache.memoryToCacheOperation();
-                    }
-                    cache.incStoreMisses();
-                }
-
-                else
-                { // cache hit, blockIdx contains block number
-                    if (cache.isWriteBack())
-                    { // change value in cache, make sure to mark dirty bit
-                        cache.sets[index]._blocks[blockIdx].setDirty(true);
-                        cache.cacheToCpuOperation();
-                    } else
-                    { // write-through - change value in cache and in main memory
-                        cache.memoryToCacheOperation();
-                    }
-                    cache.incStoreHits();
-
-                    
-                    if (cache.isLRU())
-                    {
-                        CacheSimulator::Set *s = cache.findSet(index);
-                        s->incrementLRU(blockIdx);
-                    }
-                }
-
-                // increment stores regardless
-                cache.incStores();
+                cache.store(address);
             }
 
             // LOAD!
 
-            else if (operation == "l")
+            else if (operation == 'l')
             {
-                                // increment loads regardless
-                cache.incLoads();
-                
-                uint32_t blockIdx = cache.getBlockIndex(index, tag);
-                if (blockIdx == cache.getNumBlocks())
-                { 
-                    // cache miss & now need to load value into cache
-                    cache.incLoadMisses();
 
-                    // updates FIFO/LRU times
-                    cache.loadToCache(index, tag);
-
-                    cache.cacheToCpuOperation();
-                }
-                else
-                {
-
-                    cache.cacheToCpuOperation();
-                    cache.incLoadHits();
-                    if (cache.isLRU())
-                    {
-                        CacheSimulator::Set *s = cache.findSet(index);
-                        s->incrementLRU(blockIdx);
-                        
-                    }
-                }
+                cache.load(address);
             }
 
             // ERROR!
@@ -169,6 +90,7 @@ int main(int argc, char *argv[])
             {
                 return printErrorMsg("issue with trace file");
             }
+            operation = 'd';
         }
         cache.printResults();
 
