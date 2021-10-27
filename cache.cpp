@@ -77,8 +77,22 @@ namespace CacheSimulator
         return address >> (_indexLen + _offsetLen);
     }
 
-    // TODO: implement destructor
-
+    // Destructor for cache
+    // need to iterate over cache and delete block's we've created
+    Cache::~Cache()
+    {
+        for (map<uint32_t, vector<Block *> *>::iterator setIter = sets->begin(); setIter != sets->end(); setIter++)
+        {
+            
+            vector<Block *> *set = setIter->second;
+            for (vector<Block *>::iterator blockIter = set->begin(); blockIter != set->end(); blockIter++)
+            {
+                delete *blockIter;
+            }
+            delete set;
+        }
+        delete sets;
+    }
     // upon load hit - increment block lru counters for set w/ hit
     // time = LRU time from block that's hit
 
@@ -99,6 +113,7 @@ namespace CacheSimulator
             }
         }
 
+        //on load hit - only inc. cycles by 1 when move word from cache to cpu
         cacheToCpuOperation();
     }
 
@@ -127,7 +142,7 @@ namespace CacheSimulator
                 }
             }
             // CACHE MISS
-            loadMissCase2(set, index, tag);
+            loadMissCase2(set, tag);
         }
         else
         {
@@ -156,7 +171,7 @@ namespace CacheSimulator
                       set});
     }
     // dont need to create new set
-    void Cache::loadMissCase2(vector<Block *> *set, uint32_t index, uint32_t tag)
+    void Cache::loadMissCase2(vector<Block *> *set, uint32_t tag)
     {
         // case 1: load miss where set already exists
 
@@ -176,9 +191,10 @@ namespace CacheSimulator
                 {
                     if (!isWriteThrough() && (*iter)->isDirty())
                     {
+                        //write back must always 
                         memoryToCacheOperation();
                     }
-                    delete *iter; // todo: check all deltes
+                    delete *iter; // todo: check all deletes
                     // remove block by erasing item @ position of iterator
                     set->erase(iter);
                     break;
@@ -186,8 +202,9 @@ namespace CacheSimulator
             }
             cacheToCpuOperation();
         }
-        // add the new block to the cache
         Block *newBlock = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
+        // add new block to corresp. set in cache
+
         set->push_back(newBlock);
         memoryToCacheOperation();
         cacheToCpuOperation();
@@ -217,7 +234,7 @@ namespace CacheSimulator
         cacheToCpuOperation();
         if (isWriteThrough())
         {
-            memoryToCacheOperation(); // TODO: pretty sure this is only + 100
+            write4bytesToMemory(); // TODO: pretty sure this is only + 100
         }
     }
 
@@ -251,6 +268,7 @@ namespace CacheSimulator
             // store miss where set exists logic
             if (!isWriteAllocate())
             {
+
                 write4bytesToMemory();
                 //^pretty sure this is only + 100
                 // because you can just write 4 byte quantity to memory without bringing it into cache, right?
@@ -287,6 +305,8 @@ namespace CacheSimulator
             if (isWriteThrough())
             {
                 write4bytesToMemory(); // TODO: write 4 bytes?
+                cout << "XOXO gossip gurl" << endl;
+
             }
             else
             {
@@ -308,13 +328,13 @@ namespace CacheSimulator
 
             Block *block = new Block(tag);
             memoryToCacheOperation();
+
             if (isWriteThrough())
             {
-                memoryToCacheOperation();
+                write4bytesToMemory();
             }
             else
             {
-
                 cacheToCpuOperation();
                 block->setDirty(true);
             }
@@ -394,7 +414,7 @@ namespace CacheSimulator
     {
         // cout << getBlockSize() << " " << "cycles: " << (100 * (getBlockSize() / 4)) << endl;
 
-        _cycles += (100 * (getBlockSize() / 4));
+        _cycles += (MEM_ACCESS_CYCLES * _blockSize / 4);
     }
 
     void Cache::write4bytesToMemory()

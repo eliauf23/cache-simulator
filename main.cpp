@@ -50,10 +50,10 @@ int main(int argc, char *argv[])
         else
             write = CacheSimulator::WRITE_BACK;
 
-        if (strcmp(argv[6], "fifo") != 0)
-            evict = CacheSimulator::LRU;
-        else
+        if (strcmp(argv[6], "fifo") == 0)
             evict = CacheSimulator::FIFO;
+        else
+            evict = CacheSimulator::LRU;
 
         // initialize cache
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);

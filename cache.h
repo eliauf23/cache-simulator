@@ -43,7 +43,7 @@ namespace CacheSimulator
 
         Cache() = default;
 
-        // ~Cache();
+       ~Cache();
 
         Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e);
 
@@ -55,7 +55,7 @@ namespace CacheSimulator
         //c1: create new set
     void loadMissCase1(uint32_t index, uint32_t tag);
     //c2: dont need to create new set - must pass in existing set pointer as argument
-        void loadMissCase2(vector<Block *> *set, uint32_t index, uint32_t tag);
+        void loadMissCase2(vector<Block *> *set, uint32_t tag);
         static uint32_t log_base2(uint32_t num);
                 void printResults();
 
