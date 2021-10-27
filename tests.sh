@@ -19,9 +19,9 @@ echo "\n---test 2---------\n"
 ./csim 256 16 64 no-write-allocate write-through lru < example_traces/write02.trace
 
 
-echo "\n---test 3---------\n"
+//echo "\n---test 3---------\n"
 
-./csim 128 32 64 write-allocate write-through lru < example_traces/swim.trace
+//./csim 128 32 64 write-allocate write-through lru < example_traces/swim.trace
 
 
 # ./csim 8192 1 16 no-write-allocate write-through lru < example_traces/swim.trace

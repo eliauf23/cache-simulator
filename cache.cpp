@@ -156,6 +156,7 @@ namespace CacheSimulator
     void Cache::loadMissCase1(uint32_t index, uint32_t tag)
     {
         // create set and add new block to cache
+        cout << "Entered loadMissCase1" << endl;
 
         vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
         Block *block = new Block(tag);              // TODO: will need to delete ptr while cleaning up (in destructor?)
@@ -174,6 +175,7 @@ namespace CacheSimulator
     void Cache::loadMissCase2(vector<Block *> *set, uint32_t tag)
     {
         // case 1: load miss where set already exists
+        cout << "Entered loadMissCase2" << endl;
 
         for (vector<Block *>::iterator iter = set->begin(); iter != set->end(); iter++)
         {
@@ -206,6 +208,7 @@ namespace CacheSimulator
         // add new block to corresp. set in cache
 
         set->push_back(newBlock);
+        cout << "XOXO" << endl;
         memoryToCacheOperation();
         cacheToCpuOperation();
     }
@@ -305,8 +308,6 @@ namespace CacheSimulator
             if (isWriteThrough())
             {
                 write4bytesToMemory(); // TODO: write 4 bytes?
-                cout << "XOXO gossip gurl" << endl;
-
             }
             else
             {
@@ -412,7 +413,7 @@ namespace CacheSimulator
 
     void Cache::memoryToCacheOperation()
     {
-        // cout << getBlockSize() << " " << "cycles: " << (100 * (getBlockSize() / 4)) << endl;
+        cout << getBlockSize() << " " << "cycles: " << (100 * (getBlockSize() / 4)) << endl;
 
         _cycles += (MEM_ACCESS_CYCLES * _blockSize / 4);
     }
