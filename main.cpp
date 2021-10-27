@@ -6,6 +6,8 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <chrono>
+
 
 #define NUM_ARGS 7
 
@@ -15,6 +17,7 @@ using std::endl;
 using std::getline;
 using std::stoul;
 using std::string;
+
 
 int main(int argc, char *argv[])
 {
@@ -57,23 +60,28 @@ int main(int argc, char *argv[])
 
         // initialize cache
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);
-
+int i = 0;
         char operation = 'd'; // default
         uint32_t address;     // hex address
         string line;
         int num;
+
         // read in file
+    auto start = std::chrono::steady_clock::now();
+
         while (cin)
         {
             cin >> operation >> std::hex >> address >> num;
-            if (operation == 'd')
-                break; // i.e. if file is empty/you hit end of file without errors
+            if (operation == 'd') break; // i.e. if file is empty/you hit end of file without errors
 
+            uint32_t index = cache.getIndexFromAddress(address);
+            uint32_t tag = cache.getTagFromAddress(address);
             // STORE!
-            else if (operation == 's')
+            if (operation == 's')
             {
 
-                cache.store(address);
+                cache.store(index, tag);
+
             }
 
             // LOAD!
@@ -81,7 +89,10 @@ int main(int argc, char *argv[])
             else if (operation == 'l')
             {
 
-                cache.load(address);
+                cache.load(index, tag);
+
+
+
             }
 
             // ERROR!
@@ -90,10 +101,17 @@ int main(int argc, char *argv[])
             {
                 return printErrorMsg("issue with trace file");
             }
+            i++;
+            if(i % 10000 == 0) {
+                cout << i << endl;
+            }
             operation = 'd';
         }
+            auto end = std::chrono::steady_clock::now();
+ cout << "Elapsed time in seconds: "
+        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << " sec";
         cache.printResults();
-
         return 0;
     }
 }

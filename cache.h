@@ -47,8 +47,8 @@ namespace CacheSimulator
 
         Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e);
 
-        void load(uint32_t address);
-        void store(uint32_t address);
+        void load(uint32_t index, uint32_t tag);
+        void store(uint32_t index, uint32_t tag);
 
         void loadHit(vector<Block *> *set, uint32_t hitBlockTime);
         void storeHit(vector<Block *> *set, uint32_t hitBlockTime);
@@ -60,11 +60,11 @@ namespace CacheSimulator
                 void printResults();
 
 
-    private:
         uint32_t getIndexFromAddress(uint32_t address) const;
 
         uint32_t getTagFromAddress(uint32_t address) const;
 
+    private:
 
         bool isLRU() const;
         bool isFIFO() const;
