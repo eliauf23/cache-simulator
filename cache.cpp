@@ -98,7 +98,7 @@ namespace CacheSimulator
 
     void Cache::loadHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
-        if (isLRU())
+        if (_evictionType == CacheSimulator::LRU)
         {
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
@@ -158,7 +158,7 @@ namespace CacheSimulator
 
         vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
         Block *block = new Block(tag);              // TODO: will need to delete ptr while cleaning up (in destructor?)
-        memoryToCacheOperation();
+        _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
 
         _cycles++;
 
@@ -186,10 +186,10 @@ namespace CacheSimulator
             {
                 if ((*iter)->getTime() == _numBlocks)
                 {
-                    if (!isWriteThrough() && (*iter)->isDirty())
+                    if (!_write == CacheSimulator::WRITE_THROUGH && (*iter)->isDirty())
                     {
                         //write back must always 
-                        memoryToCacheOperation();
+                        _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
                     }
                     delete *iter; // todo: check all deletes
                     // remove block by erasing item @ position of iterator
@@ -202,16 +202,15 @@ namespace CacheSimulator
         }
         Block *newBlock = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
         // add new block to corresp. set in cache
-
         set->push_back(newBlock);
-        memoryToCacheOperation();
+        _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
         _cycles++;
     }
 
     // on store hit: updates blocks and hitBlockTimes, increments cycles according to cache parameters
     void Cache::storeHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
-        if (isLRU())
+        if (_evictionType == CacheSimulator::LRU)
         {
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
@@ -222,7 +221,7 @@ namespace CacheSimulator
                 else if ((*iter)->getTime() == hitBlockTime)
                 {
                     (*iter)->resetTime();
-                    if (!isWriteThrough())
+                    if (!_write == CacheSimulator::WRITE_THROUGH)
                     {
                         (*iter)->setDirty(true);
                     }
@@ -230,7 +229,7 @@ namespace CacheSimulator
             }
         }
         _cycles++;
-        if (isWriteThrough())
+        if (_write == CacheSimulator::WRITE_THROUGH)
         {
             _cycles += MEM_ACCESS_CYCLES; // TODO: pretty sure this is only + 100
         }
@@ -243,7 +242,7 @@ namespace CacheSimulator
         incStores();
         // get relevant pieces of address
 
-        vector<Block *> *set;
+        vector<Block *> *set = nullptr;
         // search the cache for the requested block
 
         if (sets->find(index) != sets->end())
@@ -287,7 +286,7 @@ namespace CacheSimulator
                     {
                         if (isWriteBack() && (*iter)->isDirty())
                         {
-                            memoryToCacheOperation();
+                            _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
                         }
                         delete *iter; // todo check all delets
                         iter = set->erase(iter);
@@ -298,8 +297,8 @@ namespace CacheSimulator
             // add the new block
             Block *block = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
             set->push_back(block);
-            memoryToCacheOperation();
-            if (isWriteThrough())
+            _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
+            if (_write == CacheSimulator::WRITE_THROUGH)
             {
                 _cycles += MEM_ACCESS_CYCLES; // TODO: write 4 bytes?
 
@@ -324,9 +323,9 @@ namespace CacheSimulator
             vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
 
             Block *block = new Block(tag);
-            memoryToCacheOperation();
+            _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
 
-            if (isWriteThrough())
+            if (_write == CacheSimulator::WRITE_THROUGH)
             {
                 _cycles += MEM_ACCESS_CYCLES;
             }
@@ -420,7 +419,7 @@ namespace CacheSimulator
         _cycles += MEM_ACCESS_CYCLES;
     }
 
-    bool Cache::isLRU() const
+    bool Cache::_evictionType == CacheSimulator::LRU const
     {
         return _evictionType == CacheSimulator::LRU;
     }
@@ -436,7 +435,7 @@ namespace CacheSimulator
     {
         return _alloc == CacheSimulator::WRITE_ALLOCATE;
     }
-    bool Cache::isWriteThrough() const
+    bool Cache::_write == CacheSimulator::WRITE_THROUGH const
     {
         return _write == CacheSimulator::WRITE_THROUGH;
     }
