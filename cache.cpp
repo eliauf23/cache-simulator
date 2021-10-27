@@ -422,10 +422,8 @@ namespace CacheSimulator
         _cycles += MEM_ACCESS_CYCLES;
     }
 
-    bool Cache::_evictionType == CacheSimulator::LRU const
-    {
-        return _evictionType == CacheSimulator::LRU;
-    }
+    
+    
     bool Cache::isFIFO() const
     {
         return _evictionType == CacheSimulator::FIFO;
@@ -437,9 +435,5 @@ namespace CacheSimulator
     bool Cache::isWriteAllocate() const
     {
         return _alloc == CacheSimulator::WRITE_ALLOCATE;
-    }
-    bool Cache::_write == CacheSimulator::WRITE_THROUGH const
-    {
-        return _write == CacheSimulator::WRITE_THROUGH;
     }
 }
