@@ -265,7 +265,7 @@ namespace CacheSimulator
             incStoreMisses();
 
             // store miss where set exists logic
-            if (!isWriteAllocate())
+            if (_alloc == CacheSimulator::NO_WRITE_ALLOCATE)
             {
 
                 _cycles += MEM_ACCESS_CYCLES;
@@ -287,7 +287,7 @@ namespace CacheSimulator
                 {
                     if ((*iter)->getTime() == _numBlocks)
                     {
-                        if (isWriteBack() && (*iter)->isDirty())
+                        if ((_write == CacheSimulator::WRITE_BACK) && (*iter)->isDirty())
                         {
                             _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
                         }
@@ -318,7 +318,7 @@ namespace CacheSimulator
         else
         {
             incStoreMisses();
-            if (!isWriteAllocate())
+            if (_alloc == CacheSimulator::NO_WRITE_ALLOCATE)
             {
                 _cycles += MEM_ACCESS_CYCLES; // TODO: write 4 bytes?
                 return;
@@ -422,18 +422,5 @@ namespace CacheSimulator
         _cycles += MEM_ACCESS_CYCLES;
     }
 
-    
-    
-    bool Cache::isFIFO() const
-    {
-        return _evictionType == CacheSimulator::FIFO;
-    }
-    bool Cache::isWriteBack() const
-    {
-        return _write == CacheSimulator::WRITE_BACK;
-    }
-    bool Cache::isWriteAllocate() const
-    {
-        return _alloc == CacheSimulator::WRITE_ALLOCATE;
-    }
+
 }

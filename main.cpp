@@ -109,7 +109,7 @@ int i = 0;
         }
             auto end = std::chrono::steady_clock::now();
  cout << "Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
         << " sec";
         cache.printResults();
         return 0;
