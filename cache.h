@@ -1,15 +1,18 @@
 #ifndef CACHE_H
 #define CACHE_H
 
-#include "set.h"
 #include "block.h"
 #include <string>
 #include <cstdint>
 #include <climits>
-#include <unordered_map>
+#include <map>
+#include <vector>
 
 using std::cout;
 using std::endl;
+using std::map;
+using std::vector;
+
 namespace CacheSimulator
 {
 
@@ -35,157 +38,52 @@ namespace CacheSimulator
     {
 
     public:
+        //pointer to map of unsigned 32-bit int, pointer to vector of block pointers...
+        map<uint32_t, vector<Block *> *> *sets;
+
         Cache() = default;
 
-        ~Cache() {}
+        // ~Cache();
 
-        Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e)
-        {
-            _numSets = ns;
-            _numBlocks = nb;
-            _blockSize = b_size;
-            _alloc = a;
-            _write = w;
-            _evictionType = e;
-            _currNumSets = 0;
-            _loadHits = 0;
-            _loadMisses = 0;
-            _storeHits = 0;
-            _storeMisses = 0;
-            _cycles = 0;
+        Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e);
 
-            _offsetLen = log_base2(_blockSize);
-            _indexLen = log_base2(_numSets);
-            _tagLen = 32 - (_offsetLen + _indexLen);
+        void load(uint32_t address);
+        void store(uint32_t address);
 
-            // initialize cache
-            for (uint32_t i = 0; i < ns; i++)
-            {
-                addSet(i);
-            }
-        };
+        void loadHit(vector<Block *> *set, uint32_t hitBlockTime);
+        void storeHit(vector<Block *> *set, uint32_t hitBlockTime);
+        //c1: create new set
+    void storeMissCase1(uint32_t index, uint32_t tag);
+    //c2: dont need to create new set - must pass in existing set pointer as argument
+        void storeMissCase2(vector<Block *> *set, uint32_t index, uint32_t tag);
+        static uint32_t log_base2(uint32_t num);
+                void printResults();
 
-uint32_t getBlockIndex (uint32_t index, uint32_t tag);
-        void loadToCache(uint32_t index, uint32_t tag);
 
-        //end of new funs.
+    private:
+        uint32_t getIndexFromAddress(uint32_t address) const;
+
+        uint32_t getTagFromAddress(uint32_t address) const;
+
+
         bool isLRU() const;
         bool isFIFO() const;
         bool isWriteBack() const;
         bool isWriteAllocate() const;
         bool isWriteThrough() const;
+        void write4bytesToMemory();
 
-        static uint32_t log_base2(uint32_t num)
-        {
-            uint32_t result = 0U;
-
-            if (num == 0)
-                return UINT_MAX;
-            else if (num == 1)
-                return 0;
-            else
-            {
-                while (num > 1)
-                {
-                    num = num >> 1;
-                    result++;
-                }
-                return result;
-            }
-        }
-
-        // set functions:
-        void addSet(uint32_t index);
-
-        Set *findSet(uint32_t index);
-
-        int evictBlock(uint32_t index, uint32_t tag);
-
-        void writeBack(uint32_t index, uint32_t tag);
-
-        void writeAllocate(uint32_t index, uint32_t tag);
-
-        void writeThrough(uint32_t index, uint32_t tag);
-
-        uint32_t getIndexFromAddress(uint32_t address) const;
-
-        uint32_t getTagFromAddress(uint32_t address) const;
-
-        bool checkIfCacheHit(uint32_t index, uint32_t tag);
-
-        void printResults();
-
-        void handleStoreHit(uint32_t index, uint32_t tag);
-
-        /* {
-                //Take in all relevant parameters.
-                //Follow logic to update chache/not update
-                //Only update cycles. No other parameter
-                if (writeAllocate)
-                {
-
-                    //TODO: handle write-allocate case
-                    //bring the relevant memory block into the cache before the store proceeds
-                    //cache.handleWriteMemory(); //overload method <- writing to from memory just increments cycles. do that locally
-                }
-                else
-                { //is no-write allocate
-                    //TODO: handle no-write-allocate case by not modifying cache? (Yep, just exit here)
-                }
-            } */
-
-        void handleStoreMiss(uint32_t index, uint32_t tag);
-
-        /*   {
-                if (writeBack)
-                {
-                    //TODO: handle write-back case
-                    //if store & cache hit & write back:
-                    //you need to write to cache
-                    //mark block as modified: dirty = 1
-                    //TODO: make functions to compute the following:
-                    // set_index = findIndex(cache, address);
-                    //  block_index = findAddressInBlock(cache, address);
-                    //if this block is evicted in the future - must be written back to memory before replacing
-                }
-                else
-                { //is write through
-                    //TODO: handle write-through case
-                    //write to cache & write to memory!
-                } */
-
-        void handleLoadMiss(uint32_t index, uint32_t tag);
-        /* {
-                    //find corresponding cache block
-                    //is there data there?
-                    //Yes: Is WB == true?
-                    //if yes. Cycles += 100;
-                    //regardless, load address to cache.
-                    //mark block as valid.
-                    //if writeback, mark as dirty
-                    //if writethrough, load to memory (aka Cycles += 100)
-                } */
-
-        // functions to initialize cache
-
-        void handleLoadHit(uint32_t index, uint32_t tag);
-
-        // results!
-
+        // functions to keep track of cache simulator numbers
         void incLoads();
         void incStores();
-
         void incLoadHits();
-
         void incLoadMisses();
-
         void incStoreHits();
-
         void incStoreMisses();
-
         void cacheToCpuOperation();
-
         void memoryToCacheOperation();
+        uint32_t getBlockSize() const;
+        uint32_t getNumBlocks() const;
 
         uint32_t _loads = 0U;
         uint32_t _stores = 0U;
@@ -195,11 +93,6 @@ uint32_t getBlockIndex (uint32_t index, uint32_t tag);
         uint32_t _storeMisses = 0U;
         uint32_t _cycles = 0U;
 
-    uint32_t getBlockSize() const;
-        uint32_t getNumBlocks() const;
-        std::unordered_map<uint32_t, Set> sets;
-
-    private:
         // base fields that will be set from constructor
         uint32_t _currNumSets = 0U;
         uint32_t _numSets = 0U;
