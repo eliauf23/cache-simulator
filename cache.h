@@ -53,9 +53,9 @@ namespace CacheSimulator
         void loadHit(vector<Block *> *set, uint32_t hitBlockTime);
         void storeHit(vector<Block *> *set, uint32_t hitBlockTime);
         //c1: create new set
-    void storeMissCase1(uint32_t index, uint32_t tag);
+    void loadMissCase1(uint32_t index, uint32_t tag);
     //c2: dont need to create new set - must pass in existing set pointer as argument
-        void storeMissCase2(vector<Block *> *set, uint32_t index, uint32_t tag);
+        void loadMissCase2(vector<Block *> *set, uint32_t index, uint32_t tag);
         static uint32_t log_base2(uint32_t num);
                 void printResults();
 

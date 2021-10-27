@@ -28,7 +28,6 @@ using std::cout;
 using std::endl;
 using std::string;
 
-
 namespace CacheSimulator
 {
 
@@ -78,7 +77,7 @@ namespace CacheSimulator
         return address >> (_indexLen + _offsetLen);
     }
 
-//TODO: implement destructor
+    // TODO: implement destructor
 
     // upon load hit - increment block lru counters for set w/ hit
     // time = LRU time from block that's hit
@@ -128,75 +127,71 @@ namespace CacheSimulator
                 }
             }
             // CACHE MISS
-           storeMissCase2(set, index, tag);
+            loadMissCase2(set, index, tag);
         }
         else
         {
             // a miss has occurred
-            storeMissCase1(index, tag);
+            loadMissCase1(index, tag);
         }
-            incLoadMisses();
+        incLoadMisses();
     }
 
-//create new set
-    void Cache::storeMissCase1(uint32_t index, uint32_t tag) {
-// create set and add new block to cache
+    // create new set
+    void Cache::loadMissCase1(uint32_t index, uint32_t tag)
+    {
+        // create set and add new block to cache
 
-            vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
-            Block *block = new Block(tag);              // TODO: will need to delete ptr while cleaning up (in destructor?)
-            memoryToCacheOperation();
-            
-            cacheToCpuOperation();
+        vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
+        Block *block = new Block(tag);              // TODO: will need to delete ptr while cleaning up (in destructor?)
+        memoryToCacheOperation();
 
-            // add block to set
-            set->push_back(block);
-            // add set to map of set-index, set *
+        cacheToCpuOperation();
 
+        // add block to set
+        set->push_back(block);
+        // add set to map of set-index, set *
 
-            sets->insert({index,
-                          set});
+        sets->insert({index,
+                      set});
     }
-    //dont need to create new set
-        void Cache::storeMissCase2(vector<Block *> *set, uint32_t index, uint32_t tag) {
-             // case 1: load miss where set already exists
+    // dont need to create new set
+    void Cache::loadMissCase2(vector<Block *> *set, uint32_t index, uint32_t tag)
+    {
+        // case 1: load miss where set already exists
+
+        for (vector<Block *>::iterator iter = set->begin(); iter != set->end(); iter++)
+        {
+            (*iter)->incrementTime();
+        }
+
+        // if num blocks in vector == num blocks you must evict!
+        if (set->size() == _numBlocks)
+        {
+            // determine which block to evict
 
             for (vector<Block *>::iterator iter = set->begin(); iter != set->end(); iter++)
             {
-                (*iter)->incrementTime();
-            }
-
-//if num blocks in vector == num blocks you must evict!
-            if (set->size() == _numBlocks)
-            {
-                // determine which block to evict
-
-                for (vector<Block *>::iterator iter = set->begin(); iter != set->end(); iter++)
+                if ((*iter)->getTime() == _numBlocks)
                 {
-                    if ((*iter)->getTime() == _numBlocks)
+                    if (!isWriteThrough() && (*iter)->isDirty())
                     {
-                        if (!isWriteThrough() && (*iter)->isDirty())
-                        {
-                            memoryToCacheOperation();
-                        }
-                        delete *iter;
-                        //remove block by erasing item @ position of iterator
-                        set->erase(iter);
-                        break;
+                        memoryToCacheOperation();
                     }
+                    delete *iter; // todo: check all deltes
+                    // remove block by erasing item @ position of iterator
+                    set->erase(iter);
+                    break;
                 }
-                cacheToCpuOperation();
             }
-            // add the new block to the cache
-            Block *newBlock = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
-            memoryToCacheOperation();
             cacheToCpuOperation();
-            set->push_back(newBlock);
-
         }
-
-
-
-
+        // add the new block to the cache
+        Block *newBlock = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
+        set->push_back(newBlock);
+        memoryToCacheOperation();
+        cacheToCpuOperation();
+    }
 
     // on store hit: updates blocks and hitBlockTimes, increments cycles according to cache parameters
     void Cache::storeHit(vector<Block *> *set, uint32_t hitBlockTime)
@@ -222,7 +217,7 @@ namespace CacheSimulator
         cacheToCpuOperation();
         if (isWriteThrough())
         {
-            memoryToCacheOperation(); //TODO: pretty sure this is only + 100
+            memoryToCacheOperation(); // TODO: pretty sure this is only + 100
         }
     }
 
@@ -256,7 +251,7 @@ namespace CacheSimulator
             // store miss where set exists logic
             if (!isWriteAllocate())
             {
-                memoryToCacheOperation(); 
+                write4bytesToMemory();
                 //^pretty sure this is only + 100
                 // because you can just write 4 byte quantity to memory without bringing it into cache, right?
                 return;
@@ -279,7 +274,7 @@ namespace CacheSimulator
                         {
                             memoryToCacheOperation();
                         }
-                        delete *iter;
+                        delete *iter; // todo check all delets
                         iter = set->erase(iter);
                         break;
                     }
@@ -291,7 +286,7 @@ namespace CacheSimulator
             memoryToCacheOperation();
             if (isWriteThrough())
             {
-                memoryToCacheOperation(); //TODO: write 4 bytes?
+                write4bytesToMemory(); // TODO: write 4 bytes?
             }
             else
             {
@@ -306,7 +301,7 @@ namespace CacheSimulator
             incStoreMisses();
             if (!isWriteAllocate())
             {
-                memoryToCacheOperation(); //TODO: write 4 bytes?
+                write4bytesToMemory(); // TODO: write 4 bytes?
                 return;
             }
             vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
