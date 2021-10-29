@@ -111,4 +111,4 @@ namespace CacheSimulator
     };
     // end of cache class
 }
-#endif // CACHE_H   
+#endif // CACHE_H

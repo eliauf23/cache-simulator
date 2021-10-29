@@ -60,14 +60,14 @@ int main(int argc, char *argv[])
 
         // initialize cache
         CacheSimulator::Cache cache = CacheSimulator::Cache(numSets, blocksPerSet, blockSize, alloc, write, evict);
-int i = 0;
+
         char operation = 'd'; // default
         uint32_t address;     // hex address
         string line;
         int num;
 
         // read in file
-    auto start = std::chrono::steady_clock::now();
+
 
         while (cin)
         {
@@ -101,16 +101,13 @@ int i = 0;
             {
                 return printErrorMsg("issue with trace file");
             }
-            i++;
-            if(i % 10000 == 0) {
-                cout << i << endl;
-            }
+           
+           
             operation = 'd';
         }
-            auto end = std::chrono::steady_clock::now();
- cout << "Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " sec";
+
+
+
         cache.printResults();
         return 0;
     }

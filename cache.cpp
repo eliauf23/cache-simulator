@@ -67,8 +67,8 @@ namespace CacheSimulator
     uint32_t Cache::getIndexFromAddress(uint32_t address) const
     {
         if (_indexLen == 0U)
-            return 0U;                       // if fully-assoc cache
-       // address = address << _tagLen;        // this cuts off more significant bits corresponding to tag
+            return 0U;                                      // if fully-assoc cache
+                                                            // address = address << _tagLen;        // this cuts off more significant bits corresponding to tag
         return ((address << _tagLen) >> (32U - _indexLen)); // this cuts off less significant bits corresponding to offset
     }
 
@@ -83,7 +83,6 @@ namespace CacheSimulator
     {
         for (auto setIter = sets->begin(); setIter != sets->end(); setIter++)
         {
-            
             vector<Block *> *set = setIter->second;
             for (auto blockIter = set->begin(); blockIter != set->end(); blockIter++)
             {
@@ -98,6 +97,7 @@ namespace CacheSimulator
 
     void Cache::loadHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
+        _loadHits++;
         if (_evictionType == CacheSimulator::LRU)
         {
             for (auto iter = set->begin(); iter != set->end(); iter++)
@@ -121,9 +121,8 @@ namespace CacheSimulator
     void Cache::load(uint32_t index, uint32_t tag)
     {
         // increment loads counter
-        incLoads();
+        _loads++;
         // get index and tag from address
-        
 
         vector<Block *> *set = nullptr;
         // search cache for block given specified address
@@ -135,7 +134,6 @@ namespace CacheSimulator
                 if (tag == (*iter)->getTag())
                 {
                     // CACHE HIT
-                    incLoadHits();
                     loadHit(set, (*iter)->getTime());
                     return;
                 }
@@ -148,15 +146,14 @@ namespace CacheSimulator
             // need to create set
             loadMissCase1(index, tag);
         }
-        incLoadMisses();
     }
 
     // create new set
     void Cache::loadMissCase1(uint32_t index, uint32_t tag)
     {
         // create set and add new block to cache
-        cout << "Entered loadMissCase1" << endl;
-
+        //    cout << "Entered loadMissCase1" << endl;
+        _loadMisses++;
         vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
         Block *block = new Block(tag);              // TODO: will need to delete ptr while cleaning up (in destructor?)
         _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
@@ -172,7 +169,8 @@ namespace CacheSimulator
     void Cache::loadMissCase2(vector<Block *> *set, uint32_t tag)
     {
         // case 1: load miss where set already exists
-        cout << "Entered loadMissCase2" << endl;
+        //  cout << "Entered loadMissCase2" << endl;
+        _loadMisses++;
 
         for (auto iter = set->begin(); iter != set->end(); iter++)
         {
@@ -188,9 +186,9 @@ namespace CacheSimulator
             {
                 if ((*iter)->getTime() == _numBlocks)
                 {
-                    if (!_write == CacheSimulator::WRITE_THROUGH && (*iter)->isDirty())
+                    if (!(_write == CacheSimulator::WRITE_THROUGH && (*iter)->isDirty()))
                     {
-                        //write back must always 
+                        //write back must always
                         _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
                     }
                     delete *iter; // todo: check all deletes
@@ -205,14 +203,14 @@ namespace CacheSimulator
         Block *newBlock = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
         // add new block to corresp. set in cache
         set->push_back(newBlock);
-        cout << "XOXO" << endl;
+        //  cout << "XOXO" << endl;
         _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4)) + 1;
-
     }
 
     // on store hit: updates blocks and hitBlockTimes, increments cycles according to cache parameters
     void Cache::storeHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
+        _storeHits++;
         if (_evictionType == CacheSimulator::LRU)
         {
             for (auto iter = set->begin(); iter != set->end(); iter++)
@@ -224,7 +222,7 @@ namespace CacheSimulator
                 else if ((*iter)->getTime() == hitBlockTime)
                 {
                     (*iter)->resetTime();
-                    if (!_write == CacheSimulator::WRITE_THROUGH)
+                    if (!(_write == CacheSimulator::WRITE_THROUGH))
                     {
                         (*iter)->setDirty(true);
                     }
@@ -242,7 +240,7 @@ namespace CacheSimulator
 
     void Cache::store(uint32_t index, uint32_t tag)
     {
-        incStores();
+        _stores++;
         // get relevant pieces of address
 
         vector<Block *> *set = nullptr;
@@ -256,13 +254,13 @@ namespace CacheSimulator
                 if (tag == (*iter)->getTag())
                 {
                     // STORE HIT
-                    incStoreHits();
+
                     storeHit(set, (*iter)->getTime());
                     return;
                 }
             }
             // store miss
-            incStoreMisses();
+            _storeMisses++;
 
             // store miss where set exists logic
             if (_alloc == CacheSimulator::NO_WRITE_ALLOCATE)
@@ -304,8 +302,6 @@ namespace CacheSimulator
             if (_write == CacheSimulator::WRITE_THROUGH)
             {
                 _cycles += MEM_ACCESS_CYCLES; // TODO: write 4 bytes?
-
-
             }
             else
             {
@@ -318,28 +314,38 @@ namespace CacheSimulator
         else
         {
             incStoreMisses();
+            //c1: store miss: NoWriteAlloc
+
             if (_alloc == CacheSimulator::NO_WRITE_ALLOCATE)
             {
-                _cycles += MEM_ACCESS_CYCLES; // TODO: write 4 bytes?
+                //only write 4 bytes without bringing entire block into cache
+                _cycles += MEM_ACCESS_CYCLES;
                 return;
             }
             vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
 
             Block *block = new Block(tag);
+
+            //if write allocate: bring block into cache
             _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
+
+            //c2: store miss: WriteAlloc + WriteThrough
 
             if (_write == CacheSimulator::WRITE_THROUGH)
             {
+                //write 4 bytes to store through to main mem
                 _cycles += MEM_ACCESS_CYCLES;
             }
+            //c3: store miss: WriteAlloc + WriteBack
+
             else
             {
+                //defer write, transfer 4 bytes into cache
                 _cycles++;
                 block->setDirty(true);
             }
             set->push_back(block);
-            sets->insert({index,
-                          set});
+            sets->insert({index, set});
         }
     }
 
@@ -373,54 +379,5 @@ namespace CacheSimulator
             return result;
         }
     }
-
-    void Cache::incLoads()
-    {
-        _loads++;
-    }
-    void Cache::incStores()
-    {
-        _stores++;
-    }
-
-    void Cache::incLoadHits()
-    {
-        _loadHits++;
-    }
-
-    void Cache::incLoadMisses()
-    {
-        _loadMisses++;
-    }
-
-    void Cache::incStoreHits()
-    {
-        _storeHits++;
-    }
-
-    void Cache::incStoreMisses()
-    {
-        _storeMisses++;
-    }
-
-    void Cache::cacheToCpuOperation()
-    {
-
-        _cycles++;
-    }
-
-    void Cache::memoryToCacheOperation()
-    {
-        cout << getBlockSize() << " " << "cycles: " << (100 * (getBlockSize() / 4)) << endl;
-
-        _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
-    }
-
-    void Cache::write4bytesToMemory()
-    {
-
-        _cycles += MEM_ACCESS_CYCLES;
-    }
-
 
 }
