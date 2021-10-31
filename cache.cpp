@@ -313,7 +313,7 @@ namespace CacheSimulator
         // STORE MISS
         else
         {
-            incStoreMisses();
+            _storeMisses++;
             //c1: store miss: NoWriteAlloc
 
             if (_alloc == CacheSimulator::NO_WRITE_ALLOCATE)
