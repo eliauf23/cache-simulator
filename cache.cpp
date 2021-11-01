@@ -378,6 +378,8 @@ namespace CacheSimulator
         cout << "Store hits: " << _storeHits << endl;
         cout << "Store misses: " << _storeMisses << endl;
         cout << "Total cycles: " << _cycles << endl;
+        cout << "Hit rate: " << ((double) (_loadHits + _storeHits) / ((double) (_loads + _stores))) << endl;;
+    cout << "Miss penalty (cycles): " << (_blockSize / 4 )*100 << endl;; 
     }
     uint32_t Cache::log_base2(uint32_t num)
     {

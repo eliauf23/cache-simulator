@@ -16,3 +16,17 @@
 ### min cycles: write-allocate write-back fifo
 ### lowest miss rate: write-allocate write-through lru &	write-allocate write-back lru are tied
 #### miss penalty is the same for all of them as their block size is the same
+
+
+#
+| ****                    | **no-write-allocate write-through lru** | **write-allocate write-through lru** | **write-allocate write-back lru** | **no-write-allocate write-through fifo** | **write-allocate write-through fifo** | **write-allocate write-back fifo** | **** | **** | **** |
+|-------------------------|-----------------------------------------|--------------------------------------|-----------------------------------|------------------------------------------|---------------------------------------|------------------------------------|------|------|------|
+| Total Loads             |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Total stores            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Load Hits               |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Load Misses             |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Store Hits              |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Store Misses            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Total Cycles            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Miss rate (1- hit rate) |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+| Miss penalty            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
