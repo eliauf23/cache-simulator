@@ -52,16 +52,23 @@ namespace CacheSimulator
 
         void loadHit(vector<Block *> *set, uint32_t hitBlockTime);
         void storeHit(vector<Block *> *set, uint32_t hitBlockTime);
+   
         //c1: create new set
-    void loadMissCase1(uint32_t index, uint32_t tag);
-    //c2: dont need to create new set - must pass in existing set pointer as argument
+        void loadMissCase1(uint32_t index, uint32_t tag);
+    
+        //c2: dont need to create new set - must pass in existing set pointer as argument
         void loadMissCase2(vector<Block *> *set, uint32_t tag);
+
+
         static uint32_t log_base2(uint32_t num);
-                void printResults();
 
+        
+        void printResults();
 
+        //uses bit shifting to get the index from the address;
         uint32_t getIndexFromAddress(uint32_t address) const;
 
+        //uses bit shifting to get the tag from the address;
         uint32_t getTagFromAddress(uint32_t address) const;
 
     private:

@@ -1,9 +1,3 @@
-/* assumptions from assignment description:
- * this is number of cycles to perform
- * load/store operation from specified location
- * to CPU for a single 4 byte quantity
- */
-
 #define MEM_ACCESS_CYCLES 100U
 #define MIN_BLOCK_SIZE 4U
 
@@ -12,20 +6,15 @@
 #include <string>
 #include <sstream>
 #include <cstdlib>
-
 #include <cmath>
 #include <iostream>
 #include <map> //using instead of vector bc of constant amortized time complexity
-
 #include <vector>
 
 using std::cout;
 using std::endl;
 using std::map;
 using std::vector;
-
-using std::cout;
-using std::endl;
 using std::string;
 
 namespace CacheSimulator
@@ -54,31 +43,39 @@ namespace CacheSimulator
         sets = new map<uint32_t, vector<Block *> *>;
     }
 
+
+    //_blockSize getter function
     uint32_t Cache::getBlockSize() const
     {
         return _blockSize;
     }
 
+
+    //_numBlocks getter function
     uint32_t Cache::getNumBlocks() const
     {
         return _numBlocks;
     }
 
+    //returns Index value from address;
     uint32_t Cache::getIndexFromAddress(uint32_t address) const
     {
         if (_indexLen == 0U)
-            return 0U;                                      // if fully-assoc cache
-                                                            // address = address << _tagLen;        // this cuts off more significant bits corresponding to tag
-        return ((address << _tagLen) >> (32U - _indexLen)); // this cuts off less significant bits corresponding to offset
+            return 0U;                                     
+     // if fully-assoc cache address = address << _tagLen to  cuts off less significant bits corresponding to offset
+     // then address is shifted right to cuts off more significant bits corresponding to tag
+    return ((address << _tagLen) >> (32U - _indexLen)); 
     }
 
     uint32_t Cache::getTagFromAddress(uint32_t address) const
     {
+        //bit shifts right by the length of index & offset to get just the tag 
         return (address >> (_indexLen + _offsetLen));
     }
 
+
     // Destructor for cache
-    // need to iterate over cache and delete block's we've created
+    // need to iterate over cache and delete any block's we've created
     Cache::~Cache()
     {
         for (auto setIter = sets->begin(); setIter != sets->end(); setIter++)
@@ -92,9 +89,11 @@ namespace CacheSimulator
         }
         delete sets;
     }
-    // upon load hit - increment block lru counters for set w/ hit
-    // time = LRU time from block that's hit
 
+
+    // upon load hit:
+    //For LRU - increment block lru counters for set w/ hit. time = LRU time from block that's hit
+    //For FIFO - adjust the block FIFO counters for block w/ hit
     void Cache::loadHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
         _loadHits++;
@@ -113,7 +112,7 @@ namespace CacheSimulator
             }
         }
 
-        //on load hit - only inc. cycles by 1 when move word from cache to cpu
+        //on load hit: increment cycles by 1 bc we move word from cache to cpu
         _cycles++;
     }
 
@@ -236,8 +235,8 @@ namespace CacheSimulator
         }
     }
 
-    // Check if store hit or store miss given memory address
 
+    // Check if store hit or store miss given memory address
     void Cache::store(uint32_t index, uint32_t tag)
     {
         _stores++;
