@@ -13,43 +13,124 @@ public:
     Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time); //constructor
     Block(uint32_t tag); //
 
-    
+    /*
+    * Checks the _isDirty flag on the block. Returns true if the block is dirty
+    * and false if it is clean.
+    *
+    * Parameters:
+    *
+    * Returns:
+    *   true -  if the block is dirty 
+    *   false - if the block is clean.
+    */   
     bool isDirty() const;
-    //Returns true if block is dirty
-    //returns false if block is clean
 
-
-
+    /*
+    * Sets _isDirty parameter for the block as true
+    *
+    * 
+    * Parameters:
+    *   isDirty - boolean flag for dirty bit in block
+    * 
+    * Returns:
+    *   void function
+    */
     void setDirty(bool isDirty);
-    //sets block to dirty. (isDirty() will now return true)
 
+
+    /*
+    * Checks the valid flad on the block which
+    * represents if data has been written to the block. Returns true 
+    * if data is written to the block and false if its an empty block 
+    * with no data
+    * 
+    * Patameters:
+    *   
+    * Returns: 
+    *   true - if valid data is written to the block
+    *   false -  if an empty block with no data
+    */
     bool isValid() const;
-    //returns true if a value has been stored to the block 
-    //returns false if empty
 
+
+    /*
+    * Checks to see if the valid tag is set to true
+    *
+    * Parameters: 
+    *   isValid - boolean tag from block
+    * 
+    * Returns:
+    *   void
+    */
     void setValid(bool isValid);
-    //sets _isValid property of block to valid
     
 
+    /*
+    * returns the tag, which is the unique identifier, of the block
+    *
+    * Parameters: 
+    * 
+    * Returns: 
+    *   _tag variable of the block 
+    */
     uint32_t getTag() const;
-    //returns _tag of block. 
-    //tag is unique identifier of block
+ 
 
+    /*
+    * sets the tag variable of a block to the new given value
+    *
+    * Parameter:
+    *   tag - tag value to be updated 
+    * 
+    * Retuns:
+    *   void
+    */
     void setTag(uint32_t tag);
-    //sets _tag of block. Essentially loading from memory
 
+
+    /*
+    * gets the _time variable for eviction purposes
+    *
+    * Parameter:
+    * 
+    * Returns:
+    *   _time - for FIFO, this is the order in which it was added and for LRU it is the 
+    *           time count for how recently its been used
+    */
     uint32_t getTime() const;
-    //returns _time property for eviction purposes
+    
 
+    /*
+    * setter function for _time variable for eviction purposes
+    *
+    * Parameter: 
+    *   time - time value with which to update var
+    * 
+    * Returns: 
+    */
     void setTime(uint32_t time);
-    //sets _time property 
 
+
+    /*
+    *  increments time variable of a block by one
+    *
+    * Parameter:
+    * 
+    * Returns:
+    */
     void incrementTime();
-    //increments _time property by 1
 
+
+    /*
+    * Sets time variable to 0. Used when block is evicted and rewritten 
+    *
+    * Parameters:
+    * 
+    * Returns:
+    * 
+    */
     void resetTime();
-    //sets _time to 0. Used when block is evicted and rewritten
-
+    
 
 
 private:
