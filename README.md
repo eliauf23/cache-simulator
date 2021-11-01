@@ -13,6 +13,6 @@
 | Miss penalty            | 1600                                | 1600                             | 1600                          | 1600                                 | 1600                              | 1600                           |   |   |   |
 
 
-# min cycles: write-allocate write-back fifo
-# lowest miss rate: write-allocate write-through lru &	write-allocate write-back lru are tied
-# miss penalty is the same for all of them as their block size is the same
+### min cycles: write-allocate write-back fifo
+### lowest miss rate: write-allocate write-through lru &	write-allocate write-back lru are tied
+#### miss penalty is the same for all of them as their block size is the same
