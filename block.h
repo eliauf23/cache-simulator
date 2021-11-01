@@ -11,6 +11,7 @@ public:
     ~Block() {}
 
     Block(bool isDirty, bool isValid, uint32_t tag, uint32_t time); //constructor
+    
     Block(uint32_t tag); //
 
     
