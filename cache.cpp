@@ -75,7 +75,7 @@ namespace CacheSimulator
 
 
     // Destructor for cache
-    // need to iterate over cache and delete any block's we've created
+    // iterates over cache and delete any block's we've created
     Cache::~Cache()
     {
         for (auto setIter = sets->begin(); setIter != sets->end(); setIter++)
@@ -96,43 +96,50 @@ namespace CacheSimulator
     //For FIFO - adjust the block FIFO counters for block w/ hit
     void Cache::loadHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
-        _loadHits++;
+        _loadHits++; // increment load hit counter
+
         if (_evictionType == CacheSimulator::LRU)
         {
+            //for LRU, go through set
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
+                //Increment time for any blocks with time < hit block (should be all but the hit block)
                 if ((*iter)->getTime() < hitBlockTime)
                 {
                     (*iter)->incrementTime();
                 }
+                //reset the time for the hit block because we're putting in a new block
                 else if ((*iter)->getTime() == hitBlockTime)
                 {
                     (*iter)->resetTime();
                 }
             }
         }
+        //For FIFO, we update the counters when we create the set in load() function, and so there is nothing to do here except update cycles
 
         //on load hit: increment cycles by 1 bc we move word from cache to cpu
         _cycles++;
     }
+
 
     // Check if load hit or load miss given memory address
     void Cache::load(uint32_t index, uint32_t tag)
     {
         // increment loads counter
         _loads++;
-        // get index and tag from address
 
         vector<Block *> *set = nullptr;
+
         // search cache for block given specified address
         if (sets->find(index) != sets->end())
         {
+            //load
             set = sets->at(index);
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
+                 // CACHE HIT
                 if (tag == (*iter)->getTag())
                 {
-                    // CACHE HIT
                     loadHit(set, (*iter)->getTime());
                     return;
                 }
@@ -142,35 +149,37 @@ namespace CacheSimulator
         }
         else
         {
-            // need to create set
+            // CACHE MISS & set dne. Need to create set and move in block from memory 
             loadMissCase1(index, tag);
         }
     }
 
-    // create new set
+    // CACHE MISS: Set does not exit & need to create new set
     void Cache::loadMissCase1(uint32_t index, uint32_t tag)
     {
+        _loadMisses++; //increments load miss counter
+
         // create set and add new block to cache
-        //    cout << "Entered loadMissCase1" << endl;
-        _loadMisses++;
         vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
         Block *block = new Block(tag);              // TODO: will need to delete ptr while cleaning up (in destructor?)
         _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
 
-        _cycles++;
+        _cycles++; //increment total cycles by 1
 
         // add block to set
         set->push_back(block);
+
         // add set to map of set-index, set *
         sets->insert({index, set});
     }
-    // dont need to create new set
+
+
+    // CACHE MISS but set exists
     void Cache::loadMissCase2(vector<Block *> *set, uint32_t tag)
     {
-        // case 1: load miss where set already exists
-        //  cout << "Entered loadMissCase2" << endl;
-        _loadMisses++;
+        _loadMisses++; //increment load miss counter
 
+        //increment counter for all the blocks in the set 
         for (auto iter = set->begin(); iter != set->end(); iter++)
         {
             (*iter)->incrementTime();
@@ -180,47 +189,54 @@ namespace CacheSimulator
         if (set->size() == _numBlocks)
         {
             // determine which block to evict
-
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
                 if ((*iter)->getTime() == _numBlocks)
                 {
                     if (!(_write == CacheSimulator::WRITE_THROUGH && (*iter)->isDirty()))
                     {
-                        //write back must always
+                        // when evicting in write back must always write to memory 
                         _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
                     }
                     delete *iter; // todo: check all deletes
                     // remove block by erasing item @ position of iterator
                     //instead of removing block - just update values here!
+                    //TODO 10/31: Double check this 
                     set->erase(iter);
                     break;
                 }
             }
-            _cycles++;
+            _cycles++; //increment total cycles by 1
         }
+
         Block *newBlock = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
+        
         // add new block to corresp. set in cache
         set->push_back(newBlock);
-        //  cout << "XOXO" << endl;
+
         _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4)) + 1;
     }
 
     // on store hit: updates blocks and hitBlockTimes, increments cycles according to cache parameters
     void Cache::storeHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
-        _storeHits++;
+        _storeHits++; //increment counter
+
         if (_evictionType == CacheSimulator::LRU)
         {
+            //iterate through whole set
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
+                //increment time for all blocks except hitBlock
                 if ((*iter)->getTime() < hitBlockTime)
                 {
                     (*iter)->incrementTime();
                 }
+                //when you get to hitBlock, reset the time to 0 because you're writing a new word to the block
                 else if ((*iter)->getTime() == hitBlockTime)
                 {
                     (*iter)->resetTime();
+                    //if it is write back, we mark the block as dirty
                     if (!(_write == CacheSimulator::WRITE_THROUGH))
                     {
                         (*iter)->setDirty(true);
@@ -228,7 +244,9 @@ namespace CacheSimulator
                 }
             }
         }
-        _cycles++;
+        _cycles++; //increment cycles
+
+        //if it is write through, we have to write straight to memory so must add 100 to cycles for memory access
         if (_write == CacheSimulator::WRITE_THROUGH)
         {
             _cycles += MEM_ACCESS_CYCLES; // TODO: pretty sure this is only + 100
@@ -240,20 +258,19 @@ namespace CacheSimulator
     void Cache::store(uint32_t index, uint32_t tag)
     {
         _stores++;
-        // get relevant pieces of address
 
         vector<Block *> *set = nullptr;
-        // search the cache for the requested block
 
+
+        // search the cache for the requested block
         if (sets->find(index) != sets->end())
         {
             set = sets->at(index);
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
+                // STORE HIT
                 if (tag == (*iter)->getTag())
                 {
-                    // STORE HIT
-
                     storeHit(set, (*iter)->getTime());
                     return;
                 }
@@ -266,17 +283,17 @@ namespace CacheSimulator
             {
 
                 _cycles += MEM_ACCESS_CYCLES;
-                //^pretty sure this is only + 100
+                 //^pretty sure this is only + 100
                 // because you can just write 4 byte quantity to memory without bringing it into cache, right?
                 return;
             }
 
             // increment all counters such that you can place new block
-
             for (auto iter = set->begin(); iter != set->end(); iter++)
             {
                 (*iter)->incrementTime();
             }
+
             // evict block if nec.
             if (set->size() == _numBlocks)
             {
@@ -294,15 +311,18 @@ namespace CacheSimulator
                     }
                 }
             }
+
             // add the new block
             Block *block = new Block(tag); // TODO: will need to delete ptr while cleaning up (in destructor?)
             set->push_back(block);
             _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
+
+            //if write through, you have to also write straight to memory and increment by 100
             if (_write == CacheSimulator::WRITE_THROUGH)
             {
                 _cycles += MEM_ACCESS_CYCLES; // TODO: write 4 bytes?
             }
-            else
+            else //when its write back, set the dirty flag to be true and increment total cycles by 1 because only updating cache, not memory 
             {
                 _cycles++;
                 block->setDirty(true);
@@ -313,14 +333,15 @@ namespace CacheSimulator
         else
         {
             _storeMisses++;
-            //c1: store miss: NoWriteAlloc
 
+            //doesn't modify cache
             if (_alloc == CacheSimulator::NO_WRITE_ALLOCATE)
             {
                 //only write 4 bytes without bringing entire block into cache
                 _cycles += MEM_ACCESS_CYCLES;
                 return;
             }
+
             vector<Block *> *set = new vector<Block *>; // TODO: will need to delete ptr while cleaning up (in destructor?)
 
             Block *block = new Block(tag);
@@ -328,14 +349,12 @@ namespace CacheSimulator
             //if write allocate: bring block into cache
             _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
 
-            //c2: store miss: WriteAlloc + WriteThrough
 
             if (_write == CacheSimulator::WRITE_THROUGH)
             {
                 //write 4 bytes to store through to main mem
                 _cycles += MEM_ACCESS_CYCLES;
             }
-            //c3: store miss: WriteAlloc + WriteBack
 
             else
             {
