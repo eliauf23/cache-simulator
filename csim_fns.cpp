@@ -10,6 +10,9 @@
     {
         return (num && !(num & (num - 1)));
     }
+
+
+
     // parses integer from input str if greater than 0 or a power of 2
     // if error: returns -1
     int getValidInteger(std::string str)
@@ -28,13 +31,18 @@
         return retVal;
     }
 
+
+
+    //prints given error message to std:err
     int printErrorMsg(const std::string &errorMsg)
     {
         std::cerr << errorMsg << std::endl;
         return 1;;
     }
-    // input parsing functions
 
+
+
+    // input parsing functions
   int checkIfArgsValid( char * s1,  char * s2,  char * s3,  char * s4,  char * s5,
                           char * s6)
     {
