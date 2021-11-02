@@ -1,4 +1,9 @@
-
+/*
+ * Header file for cache simulator helper functions.
+ * CSF Assignment 3
+ * Elizabeth Aufzien eaufzie1@jh.edu
+ * Rosie Wolkind rwolkin1@jh.edu
+ */
 
 #ifndef CSIM_FNS_H
 #define CSIM_FNS_H

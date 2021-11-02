@@ -1,3 +1,10 @@
+/*
+ * Source file for cache class.
+ * CSF Assignment 3
+ * Elizabeth Aufzien eaufzie1@jh.edu
+ * Rosie Wolkind rwolkin1@jh.edu
+ */
+
 #define MEM_ACCESS_CYCLES 100U
 #define MIN_BLOCK_SIZE 4U
 

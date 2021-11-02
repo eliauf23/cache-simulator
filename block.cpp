@@ -1,3 +1,10 @@
+/*
+ * Header file for block class.
+ * CSF Assignment 3
+ * Elizabeth Aufzien eaufzie1@jh.edu
+ * Rosie Wolkind rwolkin1@jh.edu
+ */
+
 #include "block.h"
 
 namespace CacheSimulator {

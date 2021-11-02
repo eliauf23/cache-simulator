@@ -1,3 +1,11 @@
+/*
+ * Source file for block class.
+ * CSF Assignment 3
+ * Elizabeth Aufzien eaufzie1@jh.edu
+ * Rosie Wolkind rwolkin1@jh.edu
+ */
+
+
 #ifndef BLOCK_H
 #define BLOCK_H
 

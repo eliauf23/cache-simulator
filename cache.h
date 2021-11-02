@@ -1,3 +1,11 @@
+/*
+ * Header file for cache class.
+ * CSF Assignment 3
+ * Elizabeth Aufzien eaufzie1@jh.edu
+ * Rosie Wolkind rwolkin1@jh.edu
+ */
+
+
 #ifndef CACHE_H
 #define CACHE_H
 

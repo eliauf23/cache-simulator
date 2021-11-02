@@ -1,3 +1,10 @@
+/*
+ * Main source file for cache simulator.
+ * CSF Assignment 3
+ * Elizabeth Aufzien eaufzie1@jh.edu
+ * Rosie Wolkind rwolkin1@jh.edu
+ */
+
 #include "csim_fns.h"
 #include "cache.h"
 #include "block.h"
