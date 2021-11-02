@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
 
 
         cache.printResults();
+
         return 0;
     }
 }
