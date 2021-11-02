@@ -93,7 +93,7 @@ namespace CacheSimulator
 
     // upon load hit:
     //For LRU - increment block lru counters for set w/ hit. time = LRU time from block that's hit
-    //For FIFO - adjust the block FIFO counters for block w/ hit
+    //FIFO done implicitly
     void Cache::loadHit(vector<Block *> *set, uint32_t hitBlockTime)
     {
         _loadHits++; // increment load hit counter
@@ -115,7 +115,8 @@ namespace CacheSimulator
                 }
             }
         }
-        //For FIFO, we update the counters when we create the set in load() function, and so there is nothing to do here except update cycles
+        //For FIFO, we update the counters when we create the set in load() function, 
+        //and so there is nothing to do here except update cycles
 
         //on load hit: increment cycles by 1 bc we move word from cache to cpu
         _cycles++;
@@ -379,8 +380,9 @@ namespace CacheSimulator
         cout << "Store misses: " << _storeMisses << endl;
         cout << "Total cycles: " << _cycles << endl;
         cout << "Hit rate: " << ((double) (_loadHits + _storeHits) / ((double) (_loads + _stores))) << endl;;
-    cout << "Miss penalty (cycles): " << (_blockSize / 4 )*100 << endl;; 
+        cout << "Miss penalty (cycles): " << (_blockSize / 4 )*100 << endl;; 
     }
+
     uint32_t Cache::log_base2(uint32_t num)
     {
         uint32_t result = 0U;
