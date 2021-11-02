@@ -34,7 +34,7 @@ public:
     *   isDirty - boolean flag for dirty bit in block
     * 
     * Returns:
-    *   void function
+    *   void 
     */
     void setDirty(bool isDirty);
 

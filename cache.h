@@ -47,28 +47,127 @@ namespace CacheSimulator
 
         Cache(uint32_t ns, uint32_t nb, uint32_t b_size, Allocation a, Write w, Eviction e);
 
+
+        /*
+        * Called for any load operations, it takes in index and tag
+        * determines either load miss or load hit, increments cycles, increments counters, and updates cache
+        * as appropriate. Also checks all tags (write/no write allocate & write back/through)
+        * 
+        * Parameters:
+        *   index - index value of given address
+        *   tag -  unique identifier 
+        * 
+        * Returns:
+        *   void
+        */
         void load(uint32_t index, uint32_t tag);
+        
+        /*
+         * Called for any store operation, it uses the index and tag from
+         * the memory address, and determines either store hit or store miss.   
+         * Then increments cycles and counters, and updates cache according to the
+         * tags, either write/no-write allocate & write through/back.
+         * 
+         * Parameters:
+         *  index - index value of given address
+         *   tag -  unique identifier 
+         * 
+         * Returns:
+         *   void
+        */
         void store(uint32_t index, uint32_t tag);
 
+        /*
+        * Called when load(..) determines there is a load hit. 
+        * Increments counters (loadHit) & cycles by one .
+        * If LRU, updates time counters in the blocks. 
+        * 
+        * Parameters:
+        *   set - the set in which the block to load is in
+        *   hitBlockTime - the LRU counter of the block
+        * 
+        * Returns:
+        *   void
+        */
         void loadHit(vector<Block *> *set, uint32_t hitBlockTime);
+
+
+        /*
+        * Called when store(..) determines there is a store hit. 
+        * Increments counters (storeHit) & cycles according to cache parameters .
+        * Updates blocks and hitBlockTimes
+        * 
+        * Parameters:
+        *   set - the set in which the block to load is in
+        *   hitBlockTime - the LRU counter of the block
+        * 
+        * Returns:
+        *   void
+        */
         void storeHit(vector<Block *> *set, uint32_t hitBlockTime);
    
-        //c1: create new set
+        /*
+        * Called on a loadMiss, when the set from which youd expect to load the block from is empty
+        * Creates set and moves in block from memory. Updates counters and cycles.
+        * Then adds set to the cache.
+        *
+        * Parameters:
+        *       index - index value of given address
+        *       tag -  unique identifier  
+        *  Returns:
+        *   void       
+        */ 
         void loadMissCase1(uint32_t index, uint32_t tag);
     
-        //c2: dont need to create new set - must pass in existing set pointer as argument
-        void loadMissCase2(vector<Block *> *set, uint32_t tag);
+        /*
+        * Called on a loadMiss, when the set from which youd expect to load the block from exists
+        * but is not storing the given address in any of its block. 
+        * Increments the LRU counter for all the blocks, and then updates the value in either the FI/LRU block. 
+        * Updates counters and cycles. 
+        *
+        * Parameters:
+        *       index - index value of given address
+        *       tag -  unique identifier   
+        *  Returns:
+        *   void      
+        */         
+       void loadMissCase2(vector<Block *> *set, uint32_t tag);
 
 
         static uint32_t log_base2(uint32_t num);
 
-        
+        /*
+        * Prints out all the counters per the assignment specifications.
+        *
+        *  Parameters:
+        *   none
+        * 
+        *  Returns:
+        *   void
+        */
         void printResults();
 
-        //uses bit shifting to get the index from the address;
+        /*
+        * Utilizes bit shifting to retrieve index from an address value
+        * 
+        * Parameters:
+        *   address - memory address
+        * 
+        * Returns:
+        *   index value of address as an uint32_t
+        */
         uint32_t getIndexFromAddress(uint32_t address) const;
 
-        //uses bit shifting to get the tag from the address;
+
+        /*
+        * Utilizes bit shifting to retrieve tag from an address value
+        * 
+        * Parameters:
+        *   address - memory address
+        * 
+        * Returns:
+        *   tag value of address as an uint32_t
+        */
         uint32_t getTagFromAddress(uint32_t address) const;
 
     private:
