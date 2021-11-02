@@ -184,12 +184,10 @@ namespace CacheSimulator
             {
                 if ((*iter)->getTime() == _numBlocks)
                 {
-                    if (!(_write == CacheSimulator::WRITE_THROUGH && (*iter)->isDirty()))
+                    if ((_write == CacheSimulator::WRITE_BACK) && (*iter)->isDirty())
                     {
-                        // when evicting in write back must always write to memory
                         _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
                     }
-
                     //"evict block": first delete pointer then erase item @ pos of iter to remove block
                     delete *iter;
                     set->erase(iter);
@@ -289,7 +287,7 @@ namespace CacheSimulator
                 {
                     if ((*iter)->getTime() == _numBlocks)
                     {
-                         if ((_write == CacheSimulator::WRITE_BACK) && (*iter)->isDirty())
+                        if ((_write == CacheSimulator::WRITE_BACK) && (*iter)->isDirty())
                         {
                             _cycles += (MEM_ACCESS_CYCLES * (_blockSize / 4));
                         }
