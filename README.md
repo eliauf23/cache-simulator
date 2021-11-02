@@ -1,4 +1,12 @@
-## C=SNB, S = 256, N = 16, B = 64 
+Elizabeth Aufzien, eaufzie1@jh.edu
+Rosie Wolkind, rwolkin1@jh.edu
+
+# CSF Assignment 3: Cache Simulator
+
+
+## Discussion
+
+### C=SNB, S = 256, N = 16, B = 64 
 
 |                      | no-write-allocate write-through lru | write-allocate write-through lru | write-allocate write-back lru | no-write-allocate write-through fifo | write-allocate write-through fifo | write-allocate write-back fifo |   |   |   |
 |-------------------------|-------------------------------------|----------------------------------|-------------------------------|--------------------------------------|-----------------------------------|--------------------------------|---|---|---|
