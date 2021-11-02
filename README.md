@@ -25,16 +25,39 @@ Rosie Wolkind, rwolkin1@jh.edu
 ### lowest miss rate: write-allocate write-through lru &	write-allocate write-back lru are tied
 #### miss penalty is the same for all of them as their block size is the same
 
+# LRU vs FIFO
 
-#
-| ****                    | **no-write-allocate write-through lru** | **write-allocate write-through lru** | **write-allocate write-back lru** | **no-write-allocate write-through fifo** | **write-allocate write-through fifo** | **write-allocate write-back fifo** | **** | **** | **** |
-|-------------------------|-----------------------------------------|--------------------------------------|-----------------------------------|------------------------------------------|---------------------------------------|------------------------------------|------|------|------|
-| Total Loads             |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Total stores            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Load Hits               |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Load Misses             |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Store Hits              |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Store Misses            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Total Cycles            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Miss rate (1- hit rate) |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
-| Miss penalty            |                                         |                                      |                                   |                                          |                                       |                                    |      |      |      |
+LRU requires more upkeep, however, LRU overall had a lower miss rate & misses are costly. Updating some more counters is trivial compared to evicting blocks only to bring them into the cache again. This makes sense because FIFO only accounts for the time the block is loaded into the cache.
+
+# Write Through vs Write Back
+
+Doesn't impact hit/miss rates. Only impacts number of cycles/time.
+
+Write back will be faster as you write to memory when the block is evicted (and it's dirty) so you can avoid a lot of work at the expense of having to keep track of a dirty bit. Write through has a high upfront cost, and it's redeeming factor is its simplicity and the fact that you can always have an updated copy of information in main memory AND the cache.  
+
+# Write-Allocate vs No-Write-Allocate
+
+Write allocate is conceptually better because it can be paired with write-back (which has faster performance) and because often programs access the same block multiple times sequentially or almost sequentially. By bringing the block into the cache, you make future accesses/writes easier. Whereas no-write-allocate is good when you will not be accessing data in a block soon. However, you can't use no-write-allocate with write-back so you'll have to write through and that takes a long time.
+
+With this, to get the best cache configuration:
+
+- choose constant block size
+- let cache be write-back, write-alloc & LRU
+- Keep cache size constant & vary number of sets & number of blocks
+- Try to make cache increasingly associative without having major wait times/stalling
+## Contributions: 
+- Tasks:
+    - validating command line arguments
+    - writing helper functions such as log_base2, isPowerofTwo, isValidInteger, printErrorMsg
+    - making Block, Cache (& Set - which we removed after MS2) classes
+    - parsing data from trace files
+    - converting address to index & tag
+    - Designing handler functions for load/store hit/miss
+    - Making sure that we updated loadHits, loadMisses, storeHits, storeMisses
+    - Determining control flow for updating cycles
+    - printing out properly formatted results
+    - LRU counter updating
+    - FIFO counter updating
+- Debugging!!!
+- Commenting code
+- Fixing memory leaks
