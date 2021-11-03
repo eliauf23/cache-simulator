@@ -31,8 +31,8 @@ LRU requires more upkeep, however, LRU overall had a lower miss rate & misses ar
 
 Trends in the data:
 1. For m-way associative direct mapped cache: 
-    -For all cases but one (512_32_8	swim	write allocate	write back: But this is true for fully associative caches as well), LRU is more efficient. FIFO took more cycles overall
-    - It was more effective for an smaller m value 
+    -For all cases but one (512_32_8/swim/write allocate/write back: this is true for fully associative caches as well which likely means that it is an quirk of that file and its writing), LRU is more efficient. FIFO took more cycles overall and more cycles per operation.
+    - LRU was more effective for an smaller m value 
     - LRU is more effective for gcc than swim files, likely because swim has a higher load:store ratio
 
 2. For fully associative caches:
